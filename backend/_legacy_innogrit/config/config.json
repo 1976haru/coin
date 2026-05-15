@@ -1,0 +1,91 @@
+{
+  "exchange_rate_api": {
+    "url": "https://v6.exchangerate-api.com/v6/04ac01ddddcca7b802661932/latest/USD",
+    "fallback_rate": 1380
+  },
+  "leverage": 2,
+  "trade_amount_usdt": 100,
+  "demo_mode_balance": 1000,
+  "fees": {
+    "upbit_taker": 0.0005,
+    "okx_taker": 0.0005
+  },
+  "risk_management": {
+    "rsi_threshold": 40,
+    "hourly_change_threshold": 1.5,
+    "volume_increase_rate": 2,
+    "exit_on_risky_market": true
+  },
+  "scanner": {
+    "min_quote_volume_usdt": 250000
+  },
+  "sleep_mode": {
+    "enabled": false,
+    "start_hour": 1,
+    "end_hour": 7
+  },
+  "blacklist": [],
+  "abnormal_kimp_range": {
+    "min": -2,
+    "max": 2
+  },
+  "trading_rules": {
+    "take_profit_pnl_pct": 0.4,
+    "stop_loss_pnl_pct": 0.4,
+    "max_concurrent_positions": 5,
+    "re_entry_cooldown_minutes": 5,
+    "max_daily_trades": 1000,
+    "max_trades_per_symbol": 20,
+    "max_consecutive_losses": 5,
+    "account_loss_limit_percent": 30,
+    "freshness_sec": 5,
+    "order_timeout_sec": 8,
+    "cancel_backoff": [
+      0.2,
+      0.5,
+      1
+    ],
+    "close_order_fetch_timeout_sec": 10
+  },
+    "exit_strategy": {
+    "use_limit_order_chase": true,
+    "chase_retries": 3,
+    "chase_time_limit_ms": 250,
+    "price_offset_bps": 2,
+    "chase_max_slippage_pct": 1.0
+  },
+  "short_position_rules": {
+    "enabled": true,
+    "entry_kimp_rate": -1.5,
+    "entry_kimp_max_offset": 0.7,
+    "exit_kimp_offset": 0.4,
+    "stop_loss_offset": 0.3,
+    "time_cut_minutes": 8
+  },
+  "long_position_rules": {
+    "enabled": true,
+    "entry_kimp_rate": 0.8,
+    "entry_kimp_max_offset": 0.7,
+    "exit_kimp_offset": 0.4,
+    "stop_loss_offset": 0.3,
+    "time_cut_minutes": 15
+  },
+  "order_management": {
+    "use_limit_orders": true,
+    "order_cancellation_minutes": 5
+  },
+  "performance": {
+    "sync_window_ms": 500,
+    "okx_stale_ms": 1000
+  },
+  "pnl_calculation": {
+    "fees_bps_roundtrip": 10,
+    "slippage_bps": 5,
+    "tp_target_bps": 40,
+    "sl_target_bps": 30,
+    "safety_bps": 10
+  },
+  "logging": {
+    "log_dir": "./logs"
+  }
+}

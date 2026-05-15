@@ -1,0 +1,35 @@
+.env
+*.key
+secrets/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+logs/*.csv
+logs/*.log
+config/demo_state.json
+config/exchange_rate_cache.json
+trade_summary.json
+.DS_Store
+.idea/
+.vscode/
+
+# Test caches
+.pytest_cache/
+**/.pytest_cache/
+
+# Frontend build / deps
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+frontend/vite.config.d.ts
+frontend/vite.config.js
+
+# Large local archives
+cointrade.zip
+
+# DB files
+*.db
+*.sqlite
+*.sqlite3

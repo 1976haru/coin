@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent Trader Crypto OS</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",monospace;background:#0d1117;color:#e6edf3;min-height:100vh;padding:16px}
+.header{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid #21262d;flex-wrap:wrap}
+h1{font-size:1.2rem;color:#58a6ff}
+.brand-sub{font-size:.7rem;color:#6b7280}
+.tag{font-size:.7rem;padding:2px 7px;border-radius:10px;background:#0d2840;color:#58a6ff;font-weight:700}
+.tag.mode{background:#1f3a16;color:#3fb950}
+.tag.warn{background:#3a1f16;color:#f59e0b}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px}
+.card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:14px}
+.card.red{border-color:#f85149}.card.amber{border-color:#d97706}.card.green{border-color:#3fb950}
+h2{font-size:.85rem;color:#8b949e;margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.stat{background:#0d1117;border-radius:6px;padding:8px 10px}
+.sl{font-size:.65rem;color:#6b7280;margin-bottom:2px}
+.sv{font-size:1rem;font-weight:700;font-family:monospace}
+.sv.green{color:#3fb950}.sv.red{color:#f85149}.sv.blue{color:#58a6ff}.sv.amber{color:#f59e0b}
+button{padding:7px 14px;border:none;border-radius:6px;cursor:pointer;font-size:.8rem;font-weight:600;transition:.15s}
+.g{background:#238636;color:#fff}.r{background:#b91c1c;color:#fff}
+.b{background:#1f6feb;color:#fff}.gy{background:#21262d;color:#c9d1d9;border:1px solid #30363d}
+button:hover{opacity:.82}
+.row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px}
+input,select{width:100%;padding:6px 10px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-size:.82rem;margin-bottom:7px}
+label{display:block;font-size:.72rem;color:#8b949e;margin-bottom:2px}
+.ks-btn{width:100%;padding:12px;font-size:.9rem;border-radius:7px;background:#b91c1c;color:#fff;border:none;cursor:pointer;font-weight:700;transition:.2s}
+.ks-btn.off{background:#238636}
+.log{background:#0d1117;border-radius:6px;padding:8px;font-family:monospace;font-size:.7rem;max-height:150px;overflow-y:auto;color:#8b949e}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:5px}
+.running{background:#3fb950}.stopped{background:#6b7280}.error{background:#f85149}
+#flow{font-family:monospace;font-size:.75rem;color:#8b949e;line-height:1.7}
+.flow-ok{color:#3fb950}.flow-block{color:#f85149}.flow-pend{color:#f59e0b}
+pre{background:#0d1117;border-radius:6px;padding:10px;font-size:.72rem;overflow-x:auto;color:#8b949e;margin-top:8px;max-height:200px;overflow-y:auto}
+
+/* Release notes modal */
+.modal-back{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+.modal-back.show{display:flex}
+.modal{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:20px;max-width:560px;width:100%;max-height:80vh;overflow-y:auto}
+.modal h3{color:#58a6ff;margin-bottom:6px;font-size:1rem}
+.modal .ver{color:#6b7280;font-size:.75rem;margin-bottom:14px}
+.modal h4{color:#e6edf3;margin:14px 0 6px;font-size:.88rem}
+.modal ul{padding-left:18px;color:#c9d1d9;font-size:.82rem;line-height:1.55}
+.modal li{margin-bottom:4px}
+.modal .close-row{display:flex;justify-content:flex-end;margin-top:18px}
+
+.brand-actions{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Agent Trader Crypto OS</h1>
+  <span class="tag" id="ver-tag">v?</span>
+  <span class="tag mode" id="mode-tag">PAPER</span>
+  <span class="brand-sub" id="brand-sub">AI Agent 기반 코인 자동매매 연구·검증·관제 플랫폼</span>
+  <div class="brand-actions">
+    <button class="gy" onclick="showReleaseNotes()">버전 정보</button>
+    <span style="font-size:.75rem;color:#6b7280" id="last-update">-</span>
+  </div>
+</div>
+
+<div class="grid">
+
+<!-- 상태 -->
+<div class="card">
+  <h2>시스템 상태</h2>
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+    <span class="dot stopped" id="dot"></span>
+    <span id="status-text" style="font-size:.85rem">확인 중...</span>
+  </div>
+  <div class="stat-grid">
+    <div class="stat"><div class="sl">운용 모드</div><div class="sv blue" id="s-mode">-</div></div>
+    <div class="stat"><div class="sl">Kill Switch</div><div class="sv" id="s-ks">-</div></div>
+    <div class="stat"><div class="sl">일 손익</div><div class="sv" id="s-pnl">-</div></div>
+    <div class="stat"><div class="sl">연속손실</div><div class="sv" id="s-cl">-</div></div>
+    <div class="stat"><div class="sl">승인 대기</div><div class="sv amber" id="s-queue">-</div></div>
+    <div class="stat"><div class="sl">감사 이벤트</div><div class="sv" id="s-audit">-</div></div>
+  </div>
+</div>
+
+<!-- Kill Switch -->
+<div class="card red">
+  <h2>긴급 제어</h2>
+  <button class="ks-btn" id="ks-btn" onclick="toggleKS()">Kill Switch 활성화</button>
+  <p style="font-size:.7rem;color:#6b7280;margin:6px 0 10px;text-align:center">신규 진입 즉시 차단</p>
+  <label>차단 사유</label>
+  <input id="ks-reason" placeholder="예: 시장 급변">
+  <div style="font-size:.72rem;color:#6b7280;margin-top:4px">
+    관리자 토큰 필요 (X-Admin-Token 헤더)
+  </div>
+</div>
+
+<!-- 역김프 신호 테스트 -->
+<div class="card">
+  <h2>역김프 신호 테스트</h2>
+  <label>업비트 가격 (KRW)</label>
+  <input type="number" id="upbit-p" value="138000000">
+  <label>OKX 가격 (USDT)</label>
+  <input type="number" id="okx-p" value="100000">
+  <label>USDT/KRW 환율</label>
+  <input type="number" id="fx" value="1380">
+  <div class="row">
+    <button class="b" onclick="testKimp()">신호 생성</button>
+    <button class="gy" onclick="clearResult('kr')">지우기</button>
+  </div>
+  <pre id="kr">결과가 여기 표시됩니다</pre>
+</div>
+
+<!-- 주문 미리보기 -->
+<div class="card">
+  <h2>주문 미리보기 (Paper)</h2>
+  <label>심볼</label>
+  <input id="ord-sym" value="BTC/USDT">
+  <label>방향</label>
+  <select id="ord-side">
+    <option>BUY</option><option>SELL</option><option>OPEN_REVERSE_KIMP</option>
+  </select>
+  <label>금액 (USDT)</label>
+  <input type="number" id="ord-notional" value="10">
+  <label>가격</label>
+  <input type="number" id="ord-price" value="100000">
+  <button class="b" onclick="previewOrder()">미리보기</button>
+  <pre id="or">결과가 여기 표시됩니다</pre>
+</div>
+
+<!-- 승인 큐 -->
+<div class="card amber">
+  <h2>승인 대기 큐</h2>
+  <div id="approval-list" style="font-size:.78rem;color:#8b949e">
+    <p>승인 대기 없음</p>
+  </div>
+</div>
+
+<!-- 주문 흐름 -->
+<div class="card">
+  <h2>주문 흐름</h2>
+  <div id="flow">
+    Strategy Signal<br>↓<br>
+    AgentReview<br>↓<br>
+    <span id="f-risk">RiskManager</span><br>↓<br>
+    OrderGuard<br>↓<br>
+    <span id="f-perm">PermissionGate</span><br>↓<br>
+    ApprovalQueue / OrderGateway<br>↓<br>
+    <span id="f-route">PaperExecutor / Shadow / (Live 미연결)</span><br>↓<br>
+    AuditLog
+  </div>
+</div>
+
+<!-- 감사 로그 -->
+<div class="card" style="grid-column:1/-1">
+  <h2>시스템 로그</h2>
+  <div class="log" id="log-box">연결 중...</div>
+</div>
+
+</div>
+
+<!-- Release Notes Modal -->
+<div class="modal-back" id="notes-modal" onclick="if(event.target===this)hideReleaseNotes()">
+  <div class="modal" id="notes-content">
+    <h3>릴리즈 노트</h3>
+    <div id="notes-body">불러오는 중...</div>
+    <div class="close-row">
+      <button class="gy" onclick="hideReleaseNotes()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ADMIN = sessionStorage.getItem('admin_token') || '';
+const api = (p,o={}) => fetch('/api'+p, {headers:{'X-Admin-Token':ADMIN,...(o.headers||{})}, ...o}).then(r=>r.json()).catch(e=>({error:e.message}));
+let logs=[], ksActive=false;
+
+async function poll(){
+  const d = await api('/status');
+  if(d.error){addLog('실패: '+d.error);return;}
+  document.getElementById('dot').className = 'dot running';
+  document.getElementById('status-text').textContent = 'API 연결됨';
+  if(d.app){
+    document.getElementById('ver-tag').textContent = 'v' + (d.app.version || '?');
+    if(d.app.tagline) document.getElementById('brand-sub').textContent = d.app.tagline;
+  }
+  document.getElementById('mode-tag').textContent = d.trading_mode||'-';
+  document.getElementById('s-mode').textContent = d.mode_label||d.trading_mode||'-';
+
+  const rs = d.risk_status||{};
+  const ks = rs.kill_switch||false;
+  ksActive = ks;
+  document.getElementById('s-ks').textContent = ks?'활성':'해제';
+  document.getElementById('s-ks').className = 'sv '+(ks?'red':'green');
+  document.getElementById('ks-btn').textContent = ks?'Kill Switch 해제':'Kill Switch 활성화';
+  document.getElementById('ks-btn').className = ks?'ks-btn off':'ks-btn';
+
+  const pnl = rs.daily_pnl_pct||0;
+  document.getElementById('s-pnl').textContent = pnl.toFixed(2)+'%';
+  document.getElementById('s-pnl').className = 'sv '+(pnl<0?'red':pnl>0?'green':'');
+  document.getElementById('s-cl').textContent = rs.consecutive_losses||0;
+  document.getElementById('s-queue').textContent = d.pending_approvals||0;
+  document.getElementById('s-audit').textContent = d.audit_events||0;
+  document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+
+  // 승인 큐
+  const qa = await api('/approval/queue');
+  const items = (qa.items||[]).filter(x=>x.status==='PENDING');
+  const al = document.getElementById('approval-list');
+  if(items.length===0){al.innerHTML='<p style="color:#6b7280">승인 대기 없음</p>';}
+  else{
+    al.innerHTML = items.map(x=>`<div style="margin-bottom:8px;padding:6px;background:#0d1117;border-radius:4px">
+      <div style="color:#f59e0b;font-size:.72rem">${x.id.slice(0,8)}... · ${x.order?.side||''} ${x.order?.symbol||''}</div>
+      <div style="font-size:.7rem;color:#6b7280">${x.reason}</div>
+      <div style="display:flex;gap:4px;margin-top:4px">
+        <button class="g" style="padding:3px 8px;font-size:.7rem" onclick="decide('${x.id}',true)">승인</button>
+        <button class="r" style="padding:3px 8px;font-size:.7rem" onclick="decide('${x.id}',false)">거절</button>
+      </div>
+    </div>`).join('');
+  }
+}
+
+async function testKimp(){
+  const d = await api('/strategies/kimp/signal', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      symbol:'BTC',
+      upbit_price_krw: +document.getElementById('upbit-p').value,
+      okx_price_usdt:  +document.getElementById('okx-p').value,
+      usdt_krw:        +document.getElementById('fx').value,
+    })
+  });
+  document.getElementById('kr').textContent = JSON.stringify(d,null,2);
+  addLog('김프 신호: '+d.signal?.action+' ('+d.signal?.kimp_pct?.toFixed(2)+'%)');
+}
+
+async function previewOrder(){
+  const d = await api('/order/preview', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      symbol: document.getElementById('ord-sym').value,
+      side:   document.getElementById('ord-side').value,
+      notional_usdt: +document.getElementById('ord-notional').value,
+      price: +document.getElementById('ord-price').value,
+      leverage: 1,
+    })
+  });
+  document.getElementById('or').textContent = JSON.stringify(d,null,2);
+  addLog('주문 결과: '+d.status+' → '+d.route);
+}
+
+async function toggleKS(){
+  const newActive = !ksActive;
+  if(newActive && !confirm('Kill Switch를 활성화하면 신규 진입이 즉시 차단됩니다.')) return;
+  const token = ADMIN || prompt('Admin Token:') || '';
+  sessionStorage.setItem('admin_token', token);
+  const d = await api('/kill-switch', {
+    method:'POST', headers:{'Content-Type':'application/json','X-Admin-Token':token},
+    body: JSON.stringify({active:newActive, reason: document.getElementById('ks-reason').value})
+  });
+  if(d.error || d.detail){addLog('Kill Switch 오류: '+(d.error||d.detail)); return;}
+  addLog('Kill Switch '+(newActive?'활성화':'해제'));
+  await poll();
+}
+
+async function decide(id, approved){
+  const token = ADMIN || prompt('Admin Token:') || '';
+  await api('/approval/'+id, {method:'POST', headers:{'Content-Type':'application/json','X-Admin-Token':token}, body:JSON.stringify({approved})});
+  addLog('승인 결정: '+id.slice(0,8)+'... → '+(approved?'승인':'거절'));
+  await poll();
+}
+
+function clearResult(id){document.getElementById(id).textContent='결과가 여기 표시됩니다';}
+
+function addLog(m){
+  logs.push('['+new Date().toLocaleTimeString()+'] '+m);
+  if(logs.length>60)logs.shift();
+  const b=document.getElementById('log-box');
+  b.innerHTML=logs.slice(-12).map(l=>'<div>'+l+'</div>').join('');
+  b.scrollTop=b.scrollHeight;
+}
+
+async function showReleaseNotes(){
+  const modal = document.getElementById('notes-modal');
+  modal.classList.add('show');
+  const body = document.getElementById('notes-body');
+  body.textContent = '불러오는 중...';
+  try {
+    const d = await api('/release-notes');
+    if(!d || !d.items || !d.items.length){
+      body.innerHTML = '<p style="color:#6b7280">릴리즈 노트가 없습니다.</p>';
+      return;
+    }
+    body.innerHTML = d.items.map(n => `
+      <div style="margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid #21262d">
+        <h4>${escapeHtml(n.title)}</h4>
+        <div class="ver">v${escapeHtml(n.version)} · ${escapeHtml(n.date)}</div>
+        <ul>${(n.highlights||[]).map(h => '<li>'+escapeHtml(h)+'</li>').join('')}</ul>
+      </div>
+    `).join('');
+  } catch (e) {
+    body.textContent = '오류: ' + e.message;
+  }
+}
+
+function hideReleaseNotes(){
+  document.getElementById('notes-modal').classList.remove('show');
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+window.onload=()=>{poll();setInterval(poll,5000);};
+</script>
+</body>
+</html>

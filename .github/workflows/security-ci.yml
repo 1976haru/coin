@@ -1,0 +1,51 @@
+name: security-ci
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Forbid committed secrets
+        run: |
+          set -e
+          echo "Scanning for high-entropy secret patterns..."
+          patterns='(OKX_API_SECRET|UPBIT_SECRET_KEY|ANTHROPIC_API_KEY|TELEGRAM_TOKEN)=[A-Za-z0-9+/_-]{20,}'
+          if grep -rE "$patterns" . \
+              --include="*.py" --include="*.json" --include="*.ts" --include="*.tsx" \
+              --include="*.js" --include="*.yml" --include="*.yaml" \
+              --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=_legacy_innogrit \
+              2>/dev/null; then
+            echo "Secret pattern detected. Reject."
+            exit 1
+          fi
+          echo "No suspicious secrets in tracked files."
+      - name: Forbid .env in repo
+        run: |
+          if git ls-files --error-unmatch .env >/dev/null 2>&1; then
+            echo ".env must not be committed."
+            exit 1
+          fi
+          echo ".env not tracked."
+      - name: Forbid live flag default change
+        run: |
+          if grep -E 'enable_live_trading\s*:\s*bool\s*=.*True' backend/app/core/feature_flags.py >/dev/null; then
+            echo "ENABLE_LIVE_TRADING default appears to be True. Reject."
+            exit 1
+          fi
+          if grep -E 'enable_ai_execution\s*:\s*bool\s*=.*True' backend/app/core/feature_flags.py >/dev/null; then
+            echo "ENABLE_AI_EXECUTION default appears to be True. Reject."
+            exit 1
+          fi
+          echo "Live flags remain default false."
+      - name: Forbid active import from quarantine
+        run: |
+          if grep -rE '^\s*(from|import)\s+_legacy_innogrit' backend/app 2>/dev/null; then
+            echo "Active code imports from _legacy_innogrit/. Reject."
+            exit 1
+          fi
+          echo "Quarantine boundary intact."

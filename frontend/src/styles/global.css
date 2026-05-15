@@ -1,0 +1,149 @@
+/* 체크리스트 #7 Frontend Skeleton — 글로벌 스타일.
+   GitHub-dark 톤 유지. PC/모바일 양쪽 가독성. */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --border: #30363d;
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #58a6ff;
+  --ok: #3fb950;
+  --warn: #f59e0b;
+  --err: #f85149;
+}
+
+html, body, #root {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+a { color: var(--accent); text-decoration: none; }
+
+.app-shell { display: flex; flex-direction: column; min-height: 100%; padding: 16px; gap: 14px; }
+
+.app-header { display: flex; flex-direction: column; gap: 4px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--border); }
+.app-header .brand { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.app-header h1 { font-size: 1.2rem; color: var(--accent); }
+.app-header .version { font-size: 0.7rem; color: var(--muted); padding: 2px 8px;
+  background: #0d2840; border-radius: 10px; }
+.app-header .mode { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
+.app-header .mode-PAPER { background: #1f3a16; color: var(--ok); }
+.app-header .mode-LIVE_SHADOW { background: #3a3216; color: var(--warn); }
+.app-header .tagline { font-size: 0.78rem; color: var(--muted); }
+
+.primary-nav { display: flex; gap: 8px; flex-wrap: wrap; }
+.nav-link { padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--panel); color: var(--text); }
+.nav-link.active { border-color: var(--accent); color: var(--accent); }
+
+.page { flex: 1; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+.card h2 { font-size: 0.85rem; color: var(--muted); margin-bottom: 10px;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.card-ok { border-color: var(--ok); }
+.card-warn { border-color: var(--warn); }
+
+.status-list { list-style: none; padding-left: 0; font-size: 0.85rem; }
+.status-list li { padding: 4px 0; border-bottom: 1px solid #21262d; }
+.status-list li:last-child { border-bottom: none; }
+
+.muted { color: var(--muted); font-size: 0.82rem; }
+.error-text { color: var(--err); font-size: 0.82rem; padding: 6px 0; }
+
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+.row input { flex: 1 1 220px; padding: 6px 10px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 6px; color: var(--text);
+  font-family: inherit; font-size: 0.85rem; }
+.row button { padding: 7px 14px; background: var(--accent); color: #fff;
+  border: none; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 600; }
+.row button:disabled { background: var(--border); cursor: not-allowed; }
+
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.data-table th, .data-table td { padding: 6px 8px; border-bottom: 1px solid #21262d; text-align: left; }
+.data-table th { color: var(--muted); font-weight: 600; }
+
+.audit-list { list-style: none; padding: 0; }
+.audit-list li { background: var(--bg); border: 1px solid #21262d; border-radius: 6px;
+  padding: 8px; margin-top: 8px; font-family: monospace; font-size: 0.74rem; }
+.audit-list .ts { color: var(--muted); margin-right: 8px; }
+.audit-list .evt { color: var(--accent); font-weight: 700; }
+.audit-list pre { margin-top: 6px; white-space: pre-wrap; word-break: break-word; color: var(--text); }
+
+/* ── Phase 9 추가 (#73-#76, #80) ─────────────────────────────── */
+
+.header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+
+.admin-token-pill { display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+  border: 1px solid var(--border); border-radius: 16px; background: var(--panel); }
+.admin-token-pill .admin-status { font-size: 0.78rem; color: var(--ok); font-weight: 700; }
+.link-btn { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 0.82rem; padding: 0; }
+.link-btn:hover { text-decoration: underline; }
+
+.admin-token-form { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.admin-token-form input { padding: 6px 10px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); font-family: inherit; font-size: 0.82rem; min-width: 180px; }
+.admin-token-form button { padding: 6px 12px; background: var(--accent); color: #fff;
+  border: none; border-radius: 6px; cursor: pointer; font-size: 0.78rem; }
+
+.kill-btn { width: 100%; padding: 14px; font-size: 0.95rem; font-weight: 700;
+  background: var(--err); color: #fff; border: none; border-radius: 7px; cursor: pointer;
+  transition: background 0.15s; }
+.kill-btn:hover:not(:disabled) { opacity: 0.85; }
+.kill-btn.off { background: var(--ok); }
+.kill-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.small { font-size: 0.72rem; }
+
+.warning-list { list-style: none; padding-left: 0; }
+.warning-list li { padding: 6px 0; color: var(--warn); font-size: 0.82rem; border-bottom: 1px solid #21262d; }
+
+.gate-row { display: flex; align-items: center; gap: 10px; padding: 6px 0;
+  border-bottom: 1px solid #21262d; }
+.gate-row:last-child { border-bottom: none; }
+.gate-mark { display: inline-block; width: 22px; height: 22px; border-radius: 11px; text-align: center;
+  font-weight: 700; line-height: 22px; font-size: 0.8rem; }
+.gate-mark.pass { background: var(--ok); color: #fff; }
+.gate-mark.fail { background: var(--err); color: #fff; }
+
+/* Approval card */
+.approval-card { background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px; margin-top: 10px; }
+.approval-card-head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 6px; }
+.approval-card-actions { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+
+.btn-approve, .btn-reject { padding: 6px 14px; font-weight: 700; border: none;
+  border-radius: 6px; cursor: pointer; font-size: 0.82rem; }
+.btn-approve { background: var(--ok); color: #fff; }
+.btn-reject { background: var(--err); color: #fff; }
+.btn-approve:disabled, .btn-reject:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.filter-btn { padding: 4px 10px; background: var(--panel); border: 1px solid var(--border);
+  border-radius: 16px; color: var(--text); cursor: pointer; font-size: 0.78rem; }
+.filter-btn.active { border-color: var(--accent); color: var(--accent); }
+
+.source-tag { padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 700;
+  text-transform: uppercase; }
+.source-ai { background: #20243a; color: #a78bfa; }
+.source-system { background: #0d2840; color: var(--accent); }
+.source-strategy { background: #1f3a16; color: var(--ok); }
+.source-manual { background: #2d2620; color: var(--warn); }
+
+.agent-explain { background: var(--panel); border: 1px solid var(--border);
+  border-radius: 6px; padding: 8px; margin: 6px 0;
+  font-family: monospace; font-size: 0.76rem; white-space: pre-wrap; color: var(--muted); }
+
+.approval-summary { list-style: none; padding-left: 0; font-size: 0.82rem; }
+.approval-summary li { display: flex; gap: 8px; align-items: center; padding: 4px 0;
+  border-bottom: 1px solid #21262d; }
+.approval-summary li:last-child { border-bottom: none; }
