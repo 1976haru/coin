@@ -10,6 +10,18 @@
   - Sandbox/Paper 키와 LIVE 키 절대 섞지 않음 (#28) — adapter ``mode`` 로 표현.
   - MarketDataSource (collector.py) Protocol 호환 — 동일 인스턴스로 시세 수집/주문 모두.
   - capability 가 false 인 동작 호출 시 ExchangeAdapterDisabledError 또는 REJECTED 결과.
+
+공통 메서드 카탈로그 (스펙):
+  - fetch_price(symbol)            — fetch_ticker 의 가격 추출 alias (편의)
+  - fetch_ticker(symbol)           — 전체 Ticker 객체
+  - fetch_orderbook(symbol, depth) — OrderBook
+  - get_balance() / fetch_balance() — 잔고 dict
+  - place_order(order)             — 주문 송신
+  - cancel_order(order_id)         — 주문 취소
+
+LIVE 모드 정책 (CLAUDE.md §2.2):
+  - mode 가 ``LIVE`` 인 어댑터로 place_order 가 들어오더라도, settings.enable_live_trading
+    이 False 이면 본 base 가 사전 거부한다 (구현체와 무관하게 안전).
 """
 from __future__ import annotations
 from abc import ABC, abstractmethod
@@ -94,6 +106,16 @@ class ExchangeAdapter(ABC):
     def fetch_orderbook(self, symbol: str, depth: int = 5) -> OrderBook:
         ...
 
+    # ── 스펙 alias — fetch_price ─────────────────────────────────
+    #
+    # 스펙(체크리스트 #20)에는 ``fetch_price`` 메서드 명이 등장한다. 본 베이스는
+    # fetch_ticker 와 동등하게 동작하는 alias 로 노출한다. (Ticker 객체 자체를
+    # 사용하려면 fetch_ticker, 가격만 필요하면 fetch_price.)
+
+    def fetch_price(self, symbol: str) -> float:
+        """현재가만 반환 — fetch_ticker 결과의 ``price`` 필드."""
+        return float(self.fetch_ticker(symbol).price)
+
     # ── 잔고 ──────────────────────────────────────────────────────
 
     def fetch_balance(self) -> dict:
@@ -102,6 +124,10 @@ class ExchangeAdapter(ABC):
                 f"{self.name}: fetch_balance disabled (mode={self.capability.mode})"
             )
         return self._fetch_balance_impl()
+
+    def get_balance(self) -> dict:
+        """스펙 alias — ``fetch_balance`` 와 동등."""
+        return self.fetch_balance()
 
     def _fetch_balance_impl(self) -> dict:
         raise NotImplementedError(f"{self.name}._fetch_balance_impl must be implemented")
@@ -114,6 +140,25 @@ class ExchangeAdapter(ABC):
                 f"{self.name}: place_order disabled (mode={self.capability.mode})"
             )
         order_dict = order.to_dict() if isinstance(order, OrderRequest) else dict(order)
+        # CLAUDE.md §2.2 — LIVE 모드 어댑터는 settings.enable_live_trading 이 False 면
+        # base 단계에서 거부. 구현체가 우회하지 못하도록 base 에서 강제한다.
+        if self.capability.mode == "LIVE":
+            from app.core.config import get_settings
+            if not get_settings().enable_live_trading:
+                return OrderResult(
+                    status="REJECTED",
+                    route="live_not_wired",
+                    symbol=str(order_dict.get("symbol", "")),
+                    side=str(order_dict.get("side", "")),
+                    reason=(f"{self.name}: LIVE order rejected — "
+                            "ENABLE_LIVE_TRADING=false (CLAUDE.md §2.2)"),
+                )
+        # client_order_id 정규화 — order 가 idempotency_key 만 가지고 있으면 그대로,
+        # client_order_id 가 명시되어 있으면 우선시. base 는 단순 패스스루.
+        if "client_order_id" not in order_dict:
+            cid = order_dict.get("idempotency_key") or ""
+            if cid:
+                order_dict["client_order_id"] = cid
         return self._place_order_impl(order_dict)
 
     def _place_order_impl(self, order: dict) -> OrderResult:
