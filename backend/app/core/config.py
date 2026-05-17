@@ -66,6 +66,13 @@ class Settings:
         default_factory=lambda: _int("WATCHLIST_MAX_ENABLED_TOTAL", 100),
     )
 
+    # ── Market Data Collector (#15) ──────────────────────────────
+    # collect_all 1회 실행 시 처리할 최대 symbol 수. Watchlist cap 과는 별개로
+    # 호출 시점의 추가 안전장치 (전체 시장 fallback 방지 + 비용 한도).
+    market_collector_max_symbols: int = field(
+        default_factory=lambda: _int("MARKET_COLLECTOR_MAX_SYMBOLS", 100),
+    )
+
     # ── API 키 (출금 권한 금지) ──────────────────────────────────
     # LIVE 키 (#27)
     upbit_access_key: str = os.getenv("UPBIT_ACCESS_KEY", "")
@@ -248,6 +255,7 @@ ENV_VARS_REFERENCED: tuple[str, ...] = (
     "MAX_CONSECUTIVE_LOSSES",
     "FRESHNESS_THRESHOLD_SEC",
     "WATCHLIST_MAX_ENABLED_TOTAL",
+    "MARKET_COLLECTOR_MAX_SYMBOLS",
     "UPBIT_ACCESS_KEY",
     "UPBIT_SECRET_KEY",
     "OKX_API_KEY",

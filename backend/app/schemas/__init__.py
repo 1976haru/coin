@@ -28,7 +28,7 @@
 
 신호/판단 객체의 is_order_intent 기본값은 False (CLAUDE.md §2.3).
 """
-from .market import Ticker, OHLCV, KimpSnapshot, OrderBook
+from .market import Ticker, OHLCV, KimpSnapshot, OrderBook, FundingRate, FxRate
 from .signal import SignalBase, Action, Side, TradingSignal
 from .order import (
     OrderRequest, OrderResult, OrderType, OrderStatus, OrderRoute,
@@ -50,7 +50,7 @@ from app.strategies.kimp_mean_reversion import KimpSignal
 
 __all__ = [
     # ── legacy (dataclass) ──────────────────────────────────────
-    "Ticker", "OHLCV", "KimpSnapshot", "OrderBook",
+    "Ticker", "OHLCV", "KimpSnapshot", "OrderBook", "FundingRate", "FxRate",
     "SignalBase", "Action", "Side",
     "StrategySignal", "PairSignal", "KimpSignal",
     "OrderRequest", "OrderResult", "OrderType", "OrderStatus", "OrderRoute",

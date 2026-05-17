@@ -25,6 +25,7 @@ import LogsPage from "../pages/LogsPage";
 import SettingsPage from "../pages/SettingsPage";
 import WatchlistPage from "../pages/WatchlistPage";
 import AuditPage from "../pages/AuditPage";
+import MarketPage from "../pages/MarketPage";
 
 export default function AppRoutes() {
   return (
@@ -42,6 +43,8 @@ export default function AppRoutes() {
         <Route path="/approvals" element={<ApprovalsPage />} />
         <Route path="/watchlist" element={<WatchlistPage />} />
         <Route path="/audit" element={<AuditPage />} />
+        {/* #15 Market Data — 사이드바 #7 7개 메뉴 사양은 유지하고 라우트만 노출 */}
+        <Route path="/market" element={<MarketPage />} />
       </Route>
     </Routes>
   );

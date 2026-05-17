@@ -73,3 +73,26 @@ class OrderBook:
 
     def bid_depth_usdt(self, levels: int = 5) -> float:
         return sum(float(p) * float(q) for p, q in self.bids[:levels])
+
+
+# 체크리스트 #15 Market Data Collector — Funding / FX
+#
+# 본 단계의 데이터 흐름은 모두 read-only / Mock 우선. 실거래 호출 없음.
+
+@dataclass(frozen=True)
+class FundingRate:
+    """파생상품(perpetual) funding rate. spot-only 거래소는 None 으로 처리."""
+    symbol: str
+    exchange: str
+    funding_rate: float
+    ts: datetime
+    next_funding_time: datetime | None = None
+
+
+@dataclass(frozen=True)
+class FxRate:
+    """환율 (예: USDT-KRW). 거래소가 아닌 외부 source 사용."""
+    pair: str           # e.g. "USDT-KRW"
+    rate: float
+    ts: datetime
+    source: str = "mock"
