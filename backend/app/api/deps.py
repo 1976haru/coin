@@ -13,6 +13,7 @@ from app.execution.order_gateway import OrderGateway
 from app.brokers.paper_broker import PaperBroker
 from app.audit.audit_log import AuditLog
 from app.market.collector import MarketDataCollector, MockMarketDataSource
+from app.market.freshness import FreshnessTracker, policy_from_settings
 from app.market.notices import NoticeRegistry
 from app.market.themes import ThemeRegistry, NewsRegistry
 from app.strategies.kimp_mean_reversion import KimpMeanReversionStrategy
@@ -34,7 +35,11 @@ vol_strategy    = VolatilityBreakoutStrategy()
 pair_strategy   = PairTradingStrategy()
 agent           = AgentOrchestrator()
 
+# 체크리스트 #16: 시세 신선도 tracker (싱글톤)
+freshness_tracker = FreshnessTracker(policy=policy_from_settings())
+
 # 체크리스트 #15: 시세 수집기 (#21·#22 구현 전까지는 결정론적 Mock 사용)
+# tracker 연결 — 수집 성공 시 mark_seen 자동 호출.
 collector       = MarketDataCollector(
     sources={
         "upbit":   MockMarketDataSource("upbit"),
@@ -42,6 +47,7 @@ collector       = MarketDataCollector(
         "binance": MockMarketDataSource("binance"),
     },
     freshness_threshold_sec=settings.freshness_threshold_sec,
+    freshness_tracker=freshness_tracker,
 )
 
 # 체크리스트 #18: 거래소 공지 레지스트리 (메모리)
@@ -82,6 +88,10 @@ def get_agent():
 
 def get_collector() -> MarketDataCollector:
     return collector
+
+
+def get_freshness_tracker() -> FreshnessTracker:
+    return freshness_tracker
 
 
 def get_notices() -> NoticeRegistry:

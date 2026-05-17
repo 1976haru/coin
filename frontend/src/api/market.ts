@@ -56,3 +56,49 @@ export function fetchTickers(filter: {
 export function fetchCollectorStatus() {
   return apiFetch<CollectorStatus>("/api/market/collector/status");
 }
+
+// 체크리스트 #16 — Data Freshness
+
+export interface FreshnessRecord {
+  symbol: string;
+  exchange: string;
+  data_type: string;
+  timeframe: string | null;
+  last_seen_at: string | null;
+  age_seconds: number | null;
+  max_age_seconds: number;
+  stale: boolean;
+}
+
+export interface FreshnessReconnect {
+  symbol: string | null;
+  exchange: string | null;
+  data_type: string | null;
+  reason: string;
+}
+
+export interface FreshnessSummary {
+  now: string;
+  records: FreshnessRecord[];
+  counts: {
+    fresh: number;
+    stale: number;
+    missing: number;
+    total: number;
+    reconnecting_scopes: number;
+  };
+  reconnecting: FreshnessReconnect[];
+  policy: Record<string, number | boolean>;
+  blocks_new_entries: boolean;
+}
+
+export interface FreshnessResponse {
+  ok: boolean;
+  reason: string;
+  summary: FreshnessSummary;
+  feed: { ok: boolean; age_seconds: number | null; reason: string };
+}
+
+export function fetchFreshness() {
+  return apiFetch<FreshnessResponse>("/api/freshness");
+}

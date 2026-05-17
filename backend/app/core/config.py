@@ -73,6 +73,30 @@ class Settings:
         default_factory=lambda: _int("MARKET_COLLECTOR_MAX_SYMBOLS", 100),
     )
 
+    # ── Data Freshness (#16) ─────────────────────────────────────
+    # data_type 별 stale 허용 한도 (초) + BUY 차단 정책.
+    freshness_ticker_max_age_sec: float = field(
+        default_factory=lambda: _float("MARKET_FRESHNESS_TICKER_MAX_AGE_SECONDS", 30.0),
+    )
+    freshness_orderbook_max_age_sec: float = field(
+        default_factory=lambda: _float("MARKET_FRESHNESS_ORDERBOOK_MAX_AGE_SECONDS", 10.0),
+    )
+    freshness_ohlcv_max_age_sec: float = field(
+        default_factory=lambda: _float("MARKET_FRESHNESS_OHLCV_MAX_AGE_SECONDS", 300.0),
+    )
+    freshness_funding_max_age_sec: float = field(
+        default_factory=lambda: _float("MARKET_FRESHNESS_FUNDING_MAX_AGE_SECONDS", 3600.0),
+    )
+    freshness_fx_max_age_sec: float = field(
+        default_factory=lambda: _float("MARKET_FRESHNESS_FX_MAX_AGE_SECONDS", 300.0),
+    )
+    freshness_block_buy_when_stale: bool = field(
+        default_factory=lambda: _bool("MARKET_BLOCK_BUY_WHEN_STALE", True),
+    )
+    freshness_block_buy_when_reconnecting: bool = field(
+        default_factory=lambda: _bool("MARKET_BLOCK_BUY_WHEN_RECONNECTING", True),
+    )
+
     # ── API 키 (출금 권한 금지) ──────────────────────────────────
     # LIVE 키 (#27)
     upbit_access_key: str = os.getenv("UPBIT_ACCESS_KEY", "")
@@ -256,6 +280,13 @@ ENV_VARS_REFERENCED: tuple[str, ...] = (
     "FRESHNESS_THRESHOLD_SEC",
     "WATCHLIST_MAX_ENABLED_TOTAL",
     "MARKET_COLLECTOR_MAX_SYMBOLS",
+    "MARKET_FRESHNESS_TICKER_MAX_AGE_SECONDS",
+    "MARKET_FRESHNESS_ORDERBOOK_MAX_AGE_SECONDS",
+    "MARKET_FRESHNESS_OHLCV_MAX_AGE_SECONDS",
+    "MARKET_FRESHNESS_FUNDING_MAX_AGE_SECONDS",
+    "MARKET_FRESHNESS_FX_MAX_AGE_SECONDS",
+    "MARKET_BLOCK_BUY_WHEN_STALE",
+    "MARKET_BLOCK_BUY_WHEN_RECONNECTING",
     "UPBIT_ACCESS_KEY",
     "UPBIT_SECRET_KEY",
     "OKX_API_KEY",

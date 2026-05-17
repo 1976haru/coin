@@ -277,10 +277,13 @@ class MarketDataCollector:
         freshness_threshold_sec: float = 5.0,
         *,
         fx_source: object | None = None,
+        freshness_tracker: object | None = None,
     ):
         self.sources = dict(sources)
         self.freshness_threshold_sec = float(freshness_threshold_sec)
         self.fx_source = fx_source
+        # 체크리스트 #16: 수집 성공 시 마지막 수신 시각을 기록 — 신규 진입 guard 입력.
+        self.freshness_tracker = freshness_tracker
         self._cache: dict[tuple[str, str], Ticker] = {}
         # 최근 수집 상태 — /api/market/collector/status 용
         self._last_status: dict = {
@@ -291,6 +294,20 @@ class MarketDataCollector:
             "last_includes":      (),
             "last_list_name":     None,
         }
+
+    def _mark_seen(self, symbol: str, exchange: str, data_type: str,
+                   timeframe: str | None = None,
+                   seen_at: datetime | None = None) -> None:
+        """tracker 가 있으면 마지막 수신 시각을 기록. 실패는 무시 (수집 자체를 막지 않는다)."""
+        t = self.freshness_tracker
+        if t is None:
+            return
+        try:
+            t.mark_seen(symbol=symbol, exchange=exchange,
+                        data_type=data_type, timeframe=timeframe,
+                        seen_at=seen_at)
+        except Exception:
+            pass
 
     # ── legacy API (그대로 유지) ──────────────────────────────────
 
@@ -401,6 +418,8 @@ class MarketDataCollector:
                     r = self.fx_source.fetch_fx(pair)
                     if r is not None:
                         fx_rates.append(r)
+                        # FX 는 symbol=pair, exchange="fx" 로 tracker 에 기록.
+                        self._mark_seen(pair, "fx", "fx", seen_at=r.ts)
                 except Exception:
                     # FX 실패는 collect 전체를 막지 않는다.
                     pass
@@ -475,6 +494,7 @@ class MarketDataCollector:
             )
 
         self._cache[(symbol, exchange)] = ticker
+        self._mark_seen(symbol, exchange, "ticker", seen_at=ticker.ts)
         fr = check_timestamp_freshness(
             ticker.ts, self.freshness_threshold_sec, now=now,
             label=f"{exchange}:{symbol}",
@@ -516,6 +536,7 @@ class MarketDataCollector:
             try:
                 ticker = source.fetch_ticker(symbol)
                 self._cache[(symbol, exchange)] = ticker
+                self._mark_seen(symbol, exchange, "ticker", seen_at=ticker.ts)
                 freshness = check_timestamp_freshness(
                     ticker.ts, self.freshness_threshold_sec, now=now,
                     label=f"{exchange}:{symbol}",
@@ -529,12 +550,14 @@ class MarketDataCollector:
             else:
                 try:
                     ohlcv = tuple(source.fetch_ohlcv(symbol, timeframe, ohlcv_limit))
+                    self._mark_seen(symbol, exchange, "ohlcv", timeframe=timeframe)
                 except Exception as e:
                     failures.append(("ohlcv", f"{type(e).__name__}: {e}"))
 
         if "orderbook" in includes:
             try:
                 ob = source.fetch_orderbook(symbol, depth=orderbook_depth)
+                self._mark_seen(symbol, exchange, "orderbook", seen_at=ob.ts)
             except Exception as e:
                 failures.append(("orderbook", f"{type(e).__name__}: {e}"))
 
@@ -545,6 +568,8 @@ class MarketDataCollector:
             else:
                 try:
                     funding = source.fetch_funding(symbol)
+                    if funding is not None:
+                        self._mark_seen(symbol, exchange, "funding", seen_at=funding.ts)
                 except Exception as e:
                     failures.append(("funding", f"{type(e).__name__}: {e}"))
 

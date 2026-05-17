@@ -16,21 +16,106 @@ from app.market.collector import (
     EmptyWatchlistError,
     ALLOWED_INCLUDES,
 )
-from app.market.freshness import DataFeedState, check_feed_freshness
+from app.market.freshness import (
+    DataFeedState, check_feed_freshness, FreshnessTracker,
+)
 from app.market.market_persister import persist_report
 from app.market.watchlist import WatchlistService
 
-from .deps import settings, get_collector, get_db, verify_admin
+from .deps import (
+    settings, get_collector, get_db, verify_admin, get_freshness_tracker,
+)
 
 
 router = APIRouter()
 
 
 @router.get("/api/freshness")
-def freshness():
-    now  = datetime.now(timezone.utc)
-    feed = DataFeedState(connected=True, reconnecting=False, last_message_at=now, source="mock_feed")
-    return asdict(check_feed_freshness(feed, settings.freshness_threshold_sec, now))
+def freshness(
+    tracker: FreshnessTracker = Depends(get_freshness_tracker),
+):
+    """체크리스트 #16 — Tracker 기반 종합 freshness 상태.
+
+    하위 호환: 응답 최상위에 `ok` / `reason` 키를 유지한다
+    (기존 회귀 테스트 `test_freshness_endpoint_returns_status`).
+
+    - `ok`     : 신규 진입을 차단할 stale 또는 reconnecting 이 *없음* (= 진입 가능)
+    - `reason` : ok=true 일 때 "신선" / false 일 때 첫 차단 사유
+    - `summary`: tracker.get_summary() 전체 결과
+    - `feed`   : (호환) mock_feed 의 legacy 상태 — 단일 feed 체크용
+    """
+    now = datetime.now(timezone.utc)
+    summary = tracker.get_summary(now=now)
+
+    counts = summary["counts"]
+    has_reconnect = counts["reconnecting_scopes"] > 0
+    has_stale     = counts["stale"] > 0
+    ok = not (has_reconnect or has_stale)
+    if ok:
+        reason = "신선"
+    elif has_reconnect:
+        reason = "재연결 중 — 신규 매수 금지"
+    else:
+        reason = f"stale: {counts['stale']} record(s) 지연"
+
+    # legacy mock_feed 정보 — test_freshness_endpoint_returns_status 와 일관
+    feed = DataFeedState(connected=True, reconnecting=False,
+                         last_message_at=now, source="mock_feed")
+    legacy_status = asdict(check_feed_freshness(
+        feed, settings.freshness_threshold_sec, now))
+
+    return {
+        "ok":      ok,
+        "reason":  reason,
+        "summary": summary,
+        "feed":    legacy_status,
+    }
+
+
+class ReconnectRequest(BaseModel):
+    symbol: Optional[str] = None
+    exchange: Optional[str] = None
+    data_type: Optional[str] = None
+    reason: str = "reconnecting"
+
+
+@router.post("/api/freshness/reconnecting", status_code=201)
+def mark_reconnecting(
+    body: ReconnectRequest,
+    tracker: FreshnessTracker = Depends(get_freshness_tracker),
+    _=Depends(verify_admin),
+):
+    """주어진 범위(global / per-exchange / per-symbol) 에 reconnecting 표시.
+
+    필드가 None 이면 wildcard. 모두 None 이면 글로벌 reconnecting.
+    """
+    scope = tracker.mark_reconnecting(
+        symbol=body.symbol, exchange=body.exchange,
+        data_type=body.data_type, reason=body.reason,
+    )
+    return {
+        "marked": True,
+        "scope":  {
+            "symbol":    scope.symbol,
+            "exchange":  scope.exchange,
+            "data_type": scope.data_type,
+            "reason":    body.reason,
+        },
+    }
+
+
+@router.delete("/api/freshness/reconnecting", status_code=200)
+def clear_reconnecting(
+    symbol: Optional[str] = None,
+    exchange: Optional[str] = None,
+    data_type: Optional[str] = None,
+    tracker: FreshnessTracker = Depends(get_freshness_tracker),
+    _=Depends(verify_admin),
+):
+    cleared = tracker.clear_reconnecting(
+        symbol=symbol, exchange=exchange, data_type=data_type,
+    )
+    return {"cleared": cleared}
 
 
 # ── #15 Market Data Collector ────────────────────────────────────
