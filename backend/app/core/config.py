@@ -9,7 +9,7 @@
   - .env.example 와 본 파일의 env-var 집합은 회귀 테스트로 동기화 강제.
 """
 import os
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from functools import lru_cache
 from .modes import TradingMode
 
@@ -57,6 +57,14 @@ class Settings:
     re_entry_cooldown_min:   int   = _int("RE_ENTRY_COOLDOWN_MIN", 5)
     max_consecutive_losses:  int   = _int("MAX_CONSECUTIVE_LOSSES", 5)
     freshness_threshold_sec: float = _float("FRESHNESS_THRESHOLD_SEC", 5.0)
+
+    # ── Watchlist / Universe (#14) ───────────────────────────────
+    # 전체 enabled watchlist 항목의 상한. list_name 별 cap 과 함께 적용된다.
+    # default_factory 로 인스턴스 생성 시점에 env 평가 — reset_settings_cache()
+    # 후 monkeypatch.setenv 가 즉시 반영된다.
+    watchlist_max_enabled_total: int = field(
+        default_factory=lambda: _int("WATCHLIST_MAX_ENABLED_TOTAL", 100),
+    )
 
     # ── API 키 (출금 권한 금지) ──────────────────────────────────
     # LIVE 키 (#27)
@@ -239,6 +247,7 @@ ENV_VARS_REFERENCED: tuple[str, ...] = (
     "RE_ENTRY_COOLDOWN_MIN",
     "MAX_CONSECUTIVE_LOSSES",
     "FRESHNESS_THRESHOLD_SEC",
+    "WATCHLIST_MAX_ENABLED_TOTAL",
     "UPBIT_ACCESS_KEY",
     "UPBIT_SECRET_KEY",
     "OKX_API_KEY",

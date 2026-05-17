@@ -1,6 +1,12 @@
 """Watchlist 라우터 — /api/watchlist. 체크리스트 #14.
 
-GET 은 공개, 변경(POST/DELETE/PATCH)은 admin 토큰 필요.
+GET 은 공개 (entries + lists + summary), 변경(POST/DELETE/PATCH)은 admin 토큰 필요.
+
+오류 매핑:
+  - 검증 실패 (WatchlistValidationError) → 400
+  - universe cap 초과 (WatchlistLimitError) → 409
+  - 중복 (WatchlistDuplicateError) → 409
+  - id 미존재 (WatchlistNotFoundError) → 404
 """
 from typing import Optional
 
@@ -9,7 +15,11 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.market.watchlist import (
-    WatchlistService, WatchlistDuplicateError, WatchlistNotFoundError,
+    WatchlistService,
+    WatchlistDuplicateError,
+    WatchlistNotFoundError,
+    WatchlistValidationError,
+    WatchlistLimitError,
 )
 
 from .deps import get_db, verify_admin
@@ -39,7 +49,8 @@ def list_watchlist(
     return {
         "entries": svc.list_entries(list_name=list_name, exchange=exchange,
                                     enabled_only=enabled_only),
-        "lists": svc.list_names(),
+        "lists":   svc.list_names(),
+        "summary": svc.summary(),
     }
 
 
@@ -60,6 +71,10 @@ def add_watchlist(
             tags=body.tags,
             note=body.note,
         )
+    except WatchlistValidationError as e:
+        raise HTTPException(400, str(e))
+    except WatchlistLimitError as e:
+        raise HTTPException(409, str(e))
     except WatchlistDuplicateError as e:
         raise HTTPException(409, str(e))
 
@@ -88,6 +103,8 @@ def enable_watchlist(
         return svc.set_enabled(entry_id, True)
     except WatchlistNotFoundError as e:
         raise HTTPException(404, str(e))
+    except WatchlistLimitError as e:
+        raise HTTPException(409, str(e))
 
 
 @router.patch("/api/watchlist/{entry_id}/disable")

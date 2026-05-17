@@ -14,9 +14,19 @@ export interface WatchlistEntry {
   updated_at: string | null;
 }
 
+export interface WatchlistSummary {
+  total: number;
+  enabled: number;
+  disabled: number;
+  by_exchange: Record<string, number>;
+  by_list_name: Record<string, number>;
+  limits: Record<string, number>;
+}
+
 export interface WatchlistResponse {
   entries: WatchlistEntry[];
   lists: string[];
+  summary: WatchlistSummary;
 }
 
 export interface WatchlistFilter {

@@ -1,0 +1,12 @@
+{
+  "_note": "PAPER/MOCK 테스트용 김프 페어 예시 (upbit KRW vs binance USDT 페어). 실제 투자 추천 아님. docs/watchlist_universe.md 참조.",
+  "list_name": "kimp_pairs",
+  "entries": [
+    {"symbol": "BTC",  "exchange": "upbit",   "tags": ["kimp", "leg-krw"], "note": "PAPER 테스트용"},
+    {"symbol": "BTC/USDT", "exchange": "binance", "tags": ["kimp", "leg-usdt"], "note": "PAPER 테스트용"},
+    {"symbol": "ETH",  "exchange": "upbit",   "tags": ["kimp", "leg-krw"], "note": "PAPER 테스트용"},
+    {"symbol": "ETH/USDT", "exchange": "binance", "tags": ["kimp", "leg-usdt"], "note": "PAPER 테스트용"},
+    {"symbol": "SOL",  "exchange": "upbit",   "tags": ["kimp", "leg-krw"], "note": "PAPER 테스트용"},
+    {"symbol": "SOL/USDT", "exchange": "binance", "tags": ["kimp", "leg-usdt"], "note": "PAPER 테스트용"}
+  ]
+}

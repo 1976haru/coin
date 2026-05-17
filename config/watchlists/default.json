@@ -1,0 +1,13 @@
+{
+  "_note": "PAPER/MOCK 테스트용 예시 watchlist. 실제 투자 추천 아님. docs/watchlist_universe.md 참조.",
+  "list_name": "default",
+  "entries": [
+    {"symbol": "BTC",  "exchange": "upbit",   "tags": ["major"], "note": "PAPER 테스트용"},
+    {"symbol": "ETH",  "exchange": "upbit",   "tags": ["major"], "note": "PAPER 테스트용"},
+    {"symbol": "SOL",  "exchange": "upbit",   "tags": ["major"], "note": "PAPER 테스트용"},
+    {"symbol": "XRP",  "exchange": "upbit",   "tags": ["alt"],   "note": "PAPER 테스트용"},
+    {"symbol": "DOGE", "exchange": "upbit",   "tags": ["alt"],   "note": "PAPER 테스트용"},
+    {"symbol": "BTC/USDT", "exchange": "binance", "tags": ["major"], "note": "PAPER 테스트용"},
+    {"symbol": "ETH/USDT", "exchange": "binance", "tags": ["major"], "note": "PAPER 테스트용"}
+  ]
+}
