@@ -55,6 +55,11 @@ docker compose up -d
 | POST | `/api/notices/collect`         | 공지 수집 1회 실행 (admin, mock source 기본, #18) |
 | GET  | `/api/notices/context`         | Agent용 read-only notice context (`direct_order_allowed=false`, #18) |
 | GET  | `/api/notices/types`           | notice_type / severity 카탈로그 |
+| GET  | `/api/theme-signals`           | Trend/News/Theme 정규화 신호 (DB-backed, #19) |
+| POST | `/api/theme-signals/collect`   | theme signal 1회 수집 (admin, mock provider 기본, #19) |
+| GET  | `/api/theme-signals/context`   | NewsTrendAgent용 read-only theme context (`used_for_order=false`) |
+| POST | `/api/theme-signals/filter`    | Watchlist 후보 → `candidate_filter_review_required`/ok 라벨 |
+| GET  | `/api/theme-signals/sources`   | source / risk_flag 카탈로그 |
 
 상세는 FastAPI `/docs`.
 

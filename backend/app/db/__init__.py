@@ -14,7 +14,7 @@ from .models import (
     Base, AuditEvent, Order, AgentDecisionRecord, Position, WatchlistEntry,
     CoinSymbol, CoinCandle, CoinTick, CoinOrderbookSnapshot,
     CoinSignal, CoinOrder, CoinTrade, CoinPosition, CoinRiskEvent,
-    ExchangeNotice,
+    ExchangeNotice, ThemeSignal,
 )
 from .session import (
     get_engine, get_session_factory, session_scope,
@@ -25,7 +25,7 @@ __all__ = [
     "Base", "AuditEvent", "Order", "AgentDecisionRecord", "Position", "WatchlistEntry",
     "CoinSymbol", "CoinCandle", "CoinTick", "CoinOrderbookSnapshot",
     "CoinSignal", "CoinOrder", "CoinTrade", "CoinPosition", "CoinRiskEvent",
-    "ExchangeNotice",
+    "ExchangeNotice", "ThemeSignal",
     "get_engine", "get_session_factory", "session_scope",
     "reset_engine", "create_all_tables", "get_database_url",
 ]

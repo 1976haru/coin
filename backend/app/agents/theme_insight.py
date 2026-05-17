@@ -196,6 +196,26 @@ class ThemeInsightAgent:
                 text += f"- 고위험 심볼: {', '.join(high[:10])}\n"
             text += "- _공지 이벤트는 후보 필터/리스크 설명용이며 직접 주문 트리거가 아닙니다._\n"
 
+        # 체크리스트 #19 — ThemeContextBuilder 결과(read-only)를 explain_text 에
+        # 부가 정보로 첨부한다. action(BUY/SELL/ENTER/EXIT) 은 절대 생성하지 않는다.
+        # ctx["theme_context"] 는 ThemeContextBuilder.build_theme_context(...).to_dict().
+        tc = ctx.get("theme_context")
+        if isinstance(tc, dict) and tc.get("total_signals", 0) > 0:
+            summary = tc.get("human_summary", "")
+            high_themes = tc.get("high_attention_themes") or []
+            review = tc.get("review_required_symbols") or []
+            text = text + "\n\n### 📰 Theme/News/Trend 컨텍스트 (#19)\n"
+            if summary:
+                text += f"- {summary}\n"
+            if high_themes:
+                text += f"- 고관심 테마: {', '.join(high_themes[:5])}\n"
+            if review:
+                text += f"- 검토 필요 심볼: {', '.join(review[:10])}\n"
+            text += (
+                "- _Theme/News/Trend 데이터는 후보 필터/리스크 설명용이며 "
+                "BUY/SELL 직접 신호가 아닙니다._\n"
+            )
+
         return AgentDecision(
             "HOLD", 0.0,
             f"ThemeInsightAgent: 브리핑 ({b.overall_outlook})",

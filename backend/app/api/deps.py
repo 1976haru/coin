@@ -17,6 +17,7 @@ from app.market.freshness import FreshnessTracker, policy_from_settings
 from app.market.notices import NoticeRegistry
 from app.market.notice_collector import NoticeCollector, MockNoticeSource
 from app.market.themes import ThemeRegistry, NewsRegistry
+from app.market.theme_signals import ThemeSignalCollector, MockThemeProvider
 from app.strategies.kimp_mean_reversion import KimpMeanReversionStrategy
 from app.strategies.strategies import (
     TrendFollowingStrategy, VolatilityBreakoutStrategy, PairTradingStrategy,
@@ -59,9 +60,14 @@ notice_collector = NoticeCollector(
     sources={"mock": MockNoticeSource("mock")},
 )
 
-# 체크리스트 #19: 테마/뉴스 레지스트리 (메모리)
+# 체크리스트 #19: 테마/뉴스 레지스트리 (메모리) + DB-backed theme signal collector.
+# - themes_registry / news_registry 는 기존 메모리 기반 — AgentOrchestrator 호환 유지.
+# - theme_signal_collector 는 ``theme_signals`` 테이블에 비정형 데이터를 적재한다.
 themes_registry = ThemeRegistry()
 news_registry   = NewsRegistry()
+theme_signal_collector = ThemeSignalCollector(
+    providers={"mock": MockThemeProvider()},
+)
 
 
 def get_settings_dep():
@@ -114,6 +120,10 @@ def get_themes() -> ThemeRegistry:
 
 def get_news() -> NewsRegistry:
     return news_registry
+
+
+def get_theme_signal_collector() -> ThemeSignalCollector:
+    return theme_signal_collector
 
 
 def verify_admin(x_admin_token: str = Header(default="")):

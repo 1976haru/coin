@@ -438,3 +438,68 @@ class ExchangeNotice(Base):
                          name="uq_exchange_notice_exchange_content_hash"),
         Index("ix_exchange_notice_type_severity", "notice_type", "severity"),
     )
+
+
+# 체크리스트 #19 Trend/News/Theme Signals — 비정형 데이터 후보 필터 context.
+#
+# CoinSignal(advisory 전략 신호) 과 별개 테이블로 분리한다. CoinSignal 은 가격/지표
+# 기반의 전략 advisory 이지만 ThemeSignal 은 외부 비정형 source(트렌드/뉴스/공시/
+# 테마) 의 정규화 레코드이며 다음 원칙을 따른다 (CLAUDE.md §2.3, §2.5).
+#
+#   - used_for_order 영구 False — 본 레코드는 후보 필터/리스크 설명 전용.
+#   - direct_order_allowed 영구 False — API/Agent 어디서도 주문 권한 아님.
+#   - action 컬럼 없음 — BUY/SELL/ENTER/EXIT/LONG/SHORT 같은 매매 action 을 표현하지 않는다.
+#   - 중복 제거: (source, provider, signal_id) 또는 (source, provider, content_hash).
+
+
+class ThemeSignal(Base):
+    """Trend/News/Theme 정규화 레코드 (#19).
+
+    source 분류 (한정):
+        trend / news / disclosure / theme / macro_fx / other
+
+    related_symbols / related_keywords 는 upper-case 정규화된 token 리스트.
+    score / sentiment 는 optional (provider 별로 가용성이 다르다).
+    """
+
+    __tablename__ = "theme_signals"
+
+    id                    = Column(Integer, primary_key=True, autoincrement=True)
+    source                = Column(String(32), nullable=False, index=True)
+    provider              = Column(String(64), nullable=False, index=True)
+    # provider 측 식별자 (있으면). dedup 1순위.
+    signal_id             = Column(String(128), nullable=True, index=True)
+    theme                 = Column(String(64), nullable=False, default="", index=True)
+    title                 = Column(Text, nullable=False, default="")
+    summary               = Column(Text, nullable=False, default="")
+    url                   = Column(Text, nullable=False, default="")
+    related_symbols       = Column(JSON, nullable=False, default=list)
+    related_keywords      = Column(JSON, nullable=False, default=list)
+    # 0.0~1.0 정규화 score (provider 가 제공 시). 음수 허용 안 함.
+    score                 = Column(Float, nullable=True)
+    # -1.0 ~ 1.0 (negative/neutral/positive). nullable.
+    sentiment             = Column(Float, nullable=True)
+    risk_flags            = Column(JSON, nullable=False, default=list)
+    published_at          = Column(DateTime(timezone=True), nullable=True, index=True)
+    collected_at          = Column(DateTime(timezone=True), nullable=False, default=_utcnow, index=True)
+    content_hash          = Column(String(64), nullable=False, default="", index=True)
+    # 영구 False — 본 레코드는 advisory 도 아닌 단순 context (CLAUDE.md §2.3).
+    used_for_order        = Column(Boolean, nullable=False, default=False, index=True)
+    # 영구 False — 본 레코드 자체로 주문 행위를 허가하지 않는다.
+    direct_order_allowed  = Column(Boolean, nullable=False, default=False)
+    note                  = Column(Text, nullable=False, default="")
+    raw_payload           = Column(JSON, nullable=False, default=dict)
+    updated_at            = Column(DateTime(timezone=True), nullable=False,
+                                   default=_utcnow, onupdate=_utcnow)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "source", "provider", "signal_id",
+            name="uq_theme_signals_source_provider_signal_id",
+        ),
+        UniqueConstraint(
+            "source", "provider", "content_hash",
+            name="uq_theme_signals_source_provider_content_hash",
+        ),
+        Index("ix_theme_signals_theme_source", "theme", "source"),
+    )
