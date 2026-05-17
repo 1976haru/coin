@@ -1,0 +1,50 @@
+# Agent Trader Crypto OS — 운영 설정 템플릿
+# 실제 운영 시 본 파일을 `config/config.yaml` 로 복사 후 값만 수정한다.
+#
+# 원칙:
+#   - Secret 은 본 파일에 절대 두지 말 것. `.env` 또는 OS 환경변수에서만 읽는다.
+#   - 본 파일은 git 에 커밋해도 안전한 운영 파라미터만 둔다.
+
+app:
+  name: "AutoTrade Backend"
+  env: "local"                    # local | dev | staging | prod
+  version: "0.1.0"
+
+trading:
+  # paper: 가상 주문 (실거래 0, 본 단계 기본값)
+  # mock:  외부 호출까지 모킹 (테스트 환경)
+  # live:  실거래 — 본 단계 비활성. 활성화 전 governance 승인 필요.
+  mode: "paper"
+  allow_live_trading: false       # live 실거래 허용 (기본 false)
+  require_approval_for_live: true # live 에서도 사람 승인 강제 (기본 true)
+
+risk:
+  # 통화 단위는 운영 도메인에 따라 KRW/USDT 통일 — 본 단계는 문자열 그대로 보관.
+  max_daily_loss:     "100000"    # 일일 최대 손실
+  max_position_value: "1000000"   # 단일 포지션 최대 평가액
+  max_order_value:    "500000"    # 단일 주문 최대 명목가
+  max_open_positions: 3           # 동시 보유 포지션 수
+  emergency_stop_enabled: true    # 기본 활성 — 안전 우선
+
+broker:
+  provider: "mock"                # mock | paper (본 단계는 실거래 어댑터 미연결)
+  base_url: null                  # null 이면 어댑터 default 사용
+  # api_key / api_secret / account_no 는 절대 여기에 두지 말 것.
+  # .env 에 AUTOTRADE_BROKER__API_KEY 등으로 주입한다.
+
+database:
+  echo: false
+  # url 도 secret → .env (AUTOTRADE_DATABASE__URL)
+
+logging:
+  level: "INFO"                   # DEBUG | INFO | WARNING | ERROR
+  json: false                     # 운영 환경에서는 true 권장
+
+# ── Feature Flags (체크리스트 #10) ─────────────────────────────
+# 위험 기능 다중 잠금 장치. 값이 true 여도 feature_flags.py 의 다중 조건
+# (mode/allow_live_trading/env 등) 을 통과해야 실제로 활성화된다.
+flags:
+  enable_live_trading:        false  # 실거래 송신 후보. 단독으로 실거래 X.
+  enable_ai_execution:        false  # AI 실행 *판단* 모듈. 직접 주문 권한 아님.
+  enable_crypto_futures_live: false  # 코인/선물 실거래. local 환경에서는 강제 false.
+  enable_kimp_strategy:       false  # 김프 전략 활성. 실거래 허용 여부와 무관.

@@ -1,0 +1,47 @@
+# Agent Trader Crypto OS — 운영 설정 (체크리스트 #9 Config Layer)
+#
+# 본 파일은 사람이 읽기 쉬운 운영 설정 (한도/모드/로깅) 만 둔다.
+# Secret (API Key, Secret, 계좌번호, 토큰 등) 은 절대 여기에 넣지 말 것 —
+# `.env` 또는 OS 환경변수에서만 읽는다. (검사 코드: app/core/settings.py)
+#
+# 우선순위 (높음 → 낮음):
+#   OS 환경변수  >  .env  >  본 파일  >  코드 default
+
+app:
+  name: "AutoTrade Backend"
+  env: "local"
+  version: "0.1.0"
+
+trading:
+  mode: "paper"                   # paper | mock | live (live 는 본 단계 비활성)
+  allow_live_trading: false       # 추후 governance 승인 시 true
+  require_approval_for_live: true # live 모드에서도 사람 승인 강제
+
+risk:
+  max_daily_loss: "100000"
+  max_position_value: "1000000"
+  max_order_value: "500000"
+  max_open_positions: 3
+  emergency_stop_enabled: true
+
+broker:
+  provider: "mock"                # 본 단계는 mock/paper 만 사용
+  base_url: null                  # 미설정 시 어댑터 default
+  # api_key / api_secret / account_no 는 절대 여기에 두지 말 것 → .env
+
+database:
+  echo: false
+  # url 은 secret → .env (AUTOTRADE_DATABASE__URL)
+
+logging:
+  level: "INFO"
+  json: false
+
+# ── Feature Flags (체크리스트 #10) ─────────────────────────────
+# 모든 위험 플래그 default false. True 로 설정해도 실제 활성 여부는
+# app/core/feature_flags.py 의 다중 조건 게이트가 추가로 판단한다.
+flags:
+  enable_live_trading: false        # 실거래 후보 — 단독으로는 실거래 활성 X
+  enable_ai_execution: false        # AI 실행 *판단* 모듈 — 직접 주문 권한 아님
+  enable_crypto_futures_live: false # 코인/선물 실거래 — local 환경에서는 강제 False
+  enable_kimp_strategy: false       # 김프 전략 모듈 활성 — 실거래 허용과 무관

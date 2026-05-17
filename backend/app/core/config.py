@@ -202,6 +202,27 @@ def reset_settings_cache() -> None:
 
 # 본 파일의 Settings 가 직접 참조하는 env 변수 이름. .env.example 에 반드시
 # 동일 키가 존재해야 한다 (test_config_layer.py 가 회귀 검증).
+# ─────────────────────────────────────────────────────────────────
+# 체크리스트 #9: 신규 pydantic-settings 계층 재export.
+#
+# `app.core.settings` 가 nested + SecretStr + YAML 지원 Settings 를 제공한다.
+# 본 파일의 legacy `Settings` 와 충돌하지 않도록 신규 타입은 `AutoTradeSettings`
+# 라는 이름으로 노출한다. 신규 코드 권장:
+#
+#   from app.core.settings import get_app_settings
+#   settings = get_app_settings()
+#
+# 본 파일에서 직접:
+#
+#   from app.core.config import AutoTradeSettings, get_app_settings
+# ─────────────────────────────────────────────────────────────────
+from .settings import (  # noqa: E402  (legacy 코드와의 분리 유지)
+    Settings as AutoTradeSettings,
+    get_app_settings,
+    reset_app_settings_cache,
+)
+
+
 ENV_VARS_REFERENCED: tuple[str, ...] = (
     "TRADING_MODE",
     "ENABLE_LIVE_TRADING",

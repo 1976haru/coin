@@ -215,3 +215,265 @@ def test_existing_kimp_signal_keyword_call_still_works():
                    expected_edge_pct=0.5, cost_pct=0.6)
     assert s.action == "BLOCKED"
     assert s.is_order_intent is False
+
+
+# ─────────────────────────────────────────────────────────────────
+# ── 7. 신규 Pydantic v2 모델 — 체크리스트 #8 스펙 검증 ───────────
+# ─────────────────────────────────────────────────────────────────
+
+from decimal import Decimal
+from pydantic import ValidationError
+
+# 스펙 이름 alias (Pydantic 버전을 본 단계 명세대로 사용)
+from app.schemas.models import (
+    TradingMode, MarketType, OrderSide, OrderType, OrderStatus,
+    PositionSide as PSide, RiskLevel, AgentAction,
+    TradingSignal, OrderRequest, PositionSnapshot, FillEvent,
+    RiskCheckResult, AgentDecision,
+)
+
+
+def test_enums_have_expected_values():
+    assert TradingMode.PAPER.value == "paper"
+    assert TradingMode.MOCK.value == "mock"
+    assert TradingMode.LIVE.value == "live"
+    assert MarketType.CRYPTO.value == "crypto"
+    assert OrderSide.BUY.value == "buy"
+    assert OrderType.MARKET.value == "market"
+    assert OrderType.LIMIT.value == "limit"
+
+
+def test_trading_signal_creates_successfully():
+    sig = TradingSignal(
+        symbol="BTC/USDT",
+        action=AgentAction.BUY,
+        confidence=0.7,
+        reason="momentum",
+    )
+    assert sig.symbol == "BTC/USDT"
+    assert sig.action == AgentAction.BUY
+    assert sig.trading_mode == TradingMode.PAPER  # 기본 paper
+    assert sig.is_order_intent is False  # 신호는 주문 의도 없음
+
+
+def test_trading_signal_rejects_confidence_above_one():
+    with pytest.raises(ValidationError):
+        TradingSignal(
+            symbol="BTC/USDT",
+            action=AgentAction.BUY,
+            confidence=1.5,  # > 1 → invalid
+            reason="bad",
+        )
+
+
+def test_trading_signal_rejects_confidence_below_zero():
+    with pytest.raises(ValidationError):
+        TradingSignal(
+            symbol="BTC/USDT",
+            action=AgentAction.BUY,
+            confidence=-0.01,
+            reason="bad",
+        )
+
+
+def test_order_request_rejects_non_positive_quantity():
+    with pytest.raises(ValidationError):
+        OrderRequest(
+            symbol="BTC/USDT",
+            side=OrderSide.BUY,
+            order_type=OrderType.MARKET,
+            quantity=Decimal("0"),  # 0 → invalid
+        )
+    with pytest.raises(ValidationError):
+        OrderRequest(
+            symbol="BTC/USDT",
+            side=OrderSide.BUY,
+            order_type=OrderType.MARKET,
+            quantity=Decimal("-1"),
+        )
+
+
+def test_order_request_limit_requires_limit_price():
+    with pytest.raises(ValidationError):
+        OrderRequest(
+            symbol="BTC/USDT",
+            side=OrderSide.BUY,
+            order_type=OrderType.LIMIT,
+            quantity=Decimal("1"),
+            limit_price=None,  # limit 인데 가격 없음 → invalid
+        )
+
+
+def test_order_request_limit_with_price_ok():
+    o = OrderRequest(
+        symbol="BTC/USDT",
+        side=OrderSide.BUY,
+        order_type=OrderType.LIMIT,
+        quantity=Decimal("1"),
+        limit_price=Decimal("100000"),
+    )
+    assert o.limit_price == Decimal("100000")
+
+
+def test_order_request_default_trading_mode_is_paper():
+    o = OrderRequest(
+        symbol="BTC/USDT",
+        side=OrderSide.BUY,
+        quantity=Decimal("1"),
+    )
+    assert o.trading_mode == TradingMode.PAPER  # 안전 기본값
+
+
+def test_order_request_live_unapproved_is_not_executable():
+    """live + approved=False 는 실행 가능 상태로 보이지 않아야 한다 (안전 안내)."""
+    o = OrderRequest(
+        symbol="BTC/USDT",
+        side=OrderSide.BUY,
+        quantity=Decimal("1"),
+        trading_mode=TradingMode.LIVE,
+        approved=False,
+    )
+    assert o.is_executable is False
+
+
+def test_order_request_requires_approval_default_true():
+    o = OrderRequest(
+        symbol="BTC/USDT",
+        side=OrderSide.BUY,
+        quantity=Decimal("1"),
+    )
+    assert o.requires_approval is True
+
+
+def test_position_snapshot_flat_with_nonzero_quantity_rejected():
+    with pytest.raises(ValidationError):
+        PositionSnapshot(
+            symbol="BTC/USDT",
+            side=PSide.FLAT,
+            quantity=Decimal("0.5"),  # flat 인데 수량 있음 → invalid
+        )
+
+
+def test_position_snapshot_flat_with_zero_quantity_ok():
+    p = PositionSnapshot(symbol="BTC/USDT", side=PSide.FLAT)
+    assert p.quantity == Decimal("0")
+
+
+def test_position_snapshot_long_with_quantity_ok():
+    p = PositionSnapshot(
+        symbol="BTC/USDT",
+        side=PSide.LONG,
+        quantity=Decimal("0.5"),
+        avg_entry_price=Decimal("100000"),
+    )
+    assert p.side == PSide.LONG
+    assert p.quantity == Decimal("0.5")
+
+
+def test_fill_event_rejects_non_positive_price():
+    with pytest.raises(ValidationError):
+        FillEvent(
+            fill_id="f1", order_id="o1",
+            symbol="BTC/USDT", side=OrderSide.BUY,
+            quantity=Decimal("1"),
+            price=Decimal("0"),  # price <= 0 → invalid
+        )
+    with pytest.raises(ValidationError):
+        FillEvent(
+            fill_id="f1", order_id="o1",
+            symbol="BTC/USDT", side=OrderSide.BUY,
+            quantity=Decimal("1"),
+            price=Decimal("-1"),
+        )
+
+
+def test_fill_event_default_trading_mode_paper():
+    f = FillEvent(
+        fill_id="f1", order_id="o1",
+        symbol="BTC/USDT", side=OrderSide.BUY,
+        quantity=Decimal("1"),
+        price=Decimal("100000"),
+    )
+    assert f.trading_mode == TradingMode.PAPER
+    assert f.is_simulated is True
+
+
+def test_risk_check_result_blocked_with_allowed_true_rejected():
+    """RiskCheckResult: risk_level=blocked 이면 allowed 는 반드시 False."""
+    with pytest.raises(ValidationError):
+        RiskCheckResult(
+            allowed=True,
+            risk_level=RiskLevel.BLOCKED,
+            reason="should not be allowed when blocked",
+        )
+
+
+def test_risk_check_result_blocked_with_allowed_false_ok():
+    r = RiskCheckResult(
+        allowed=False,
+        risk_level=RiskLevel.BLOCKED,
+        reason="daily loss limit",
+    )
+    assert r.allowed is False
+    assert r.risk_level == RiskLevel.BLOCKED
+
+
+def test_risk_check_result_ok_allowed_true():
+    r = RiskCheckResult(allowed=True, risk_level=RiskLevel.OK)
+    assert r.allowed is True
+
+
+def test_agent_decision_rejects_confidence_above_one():
+    with pytest.raises(ValidationError):
+        AgentDecision(
+            agent_name="signal_quality",
+            action=AgentAction.HOLD,
+            confidence=1.01,  # > 1 → invalid
+            reason="bad",
+        )
+
+
+def test_agent_decision_rejects_confidence_below_zero():
+    with pytest.raises(ValidationError):
+        AgentDecision(
+            agent_name="signal_quality",
+            action=AgentAction.HOLD,
+            confidence=-0.1,  # < 0 → invalid
+            reason="bad",
+        )
+
+
+def test_agent_decision_default_is_order_intent_false_pydantic():
+    """AgentDecision (Pydantic) 도 is_order_intent 기본 False — CLAUDE.md §2.3."""
+    d = AgentDecision(
+        agent_name="risk_officer",
+        action=AgentAction.HOLD,
+        confidence=0.5,
+        reason="test",
+    )
+    assert d.is_order_intent is False
+
+
+# ── 단일 진입점 / models 서브모듈 가용성 ──────────────────────────
+
+def test_pydantic_models_importable_from_models_submodule():
+    """spec 이 요구하는 이름들이 `app.schemas.models` 에서 모두 import 가능한지."""
+    from app.schemas.models import (  # noqa: F401
+        TradingMode, MarketType, OrderSide, OrderType, OrderStatus,
+        PositionSide, RiskLevel, AgentAction,
+        TradingSignal, OrderRequest, PositionSnapshot, FillEvent,
+        RiskCheckResult, AgentDecision,
+        ConfiguredBaseModel, Money, utc_now,
+    )
+
+
+def test_no_secret_fields_in_new_models():
+    """신규 Pydantic 모델 필드명에 secret 류 키워드가 들어가 있지 않아야 한다."""
+    forbidden = {"api_key", "secret", "passphrase", "token", "account_no",
+                 "account_number", "private_key"}
+    suspects = [OrderRequest, AgentDecision, TradingSignal, PositionSnapshot,
+                FillEvent, RiskCheckResult]
+    for model in suspects:
+        names = set(model.model_fields.keys())
+        leaked = names & forbidden
+        assert not leaked, f"{model.__name__} leaks secret fields: {leaked}"

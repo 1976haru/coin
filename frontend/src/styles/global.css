@@ -147,3 +147,103 @@ a { color: var(--accent); text-decoration: none; }
 .approval-summary li { display: flex; gap: 8px; align-items: center; padding: 4px 0;
   border-bottom: 1px solid #21262d; }
 .approval-summary li:last-child { border-bottom: none; }
+
+/* ─────────────────────────────────────────────────────────────
+   체크리스트 #7 Frontend Skeleton — AppLayout + 반응형
+   ───────────────────────────────────────────────────────────── */
+
+.app-layout { display: flex; flex-direction: column; min-height: 100%; }
+
+.app-layout-body { display: flex; flex: 1; min-height: 0; }
+.app-layout-main { flex: 1; padding: 16px; max-width: 1280px; width: 100%;
+  margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+
+.page-content { flex: 1; }
+.page-stack { display: flex; flex-direction: column; gap: 16px; }
+.page-title { font-size: 1.15rem; color: var(--accent); letter-spacing: 0.02em; }
+
+.section { background: var(--panel); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.section-title { font-size: 0.85rem; color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.06em; }
+
+/* ── Emergency Stop bar (항상 노출) ─────────────────────────── */
+.emergency-stop-bar { display: flex; justify-content: space-between; align-items: center;
+  gap: 12px; padding: 10px 16px; background: #2d1518; border-bottom: 1px solid var(--err);
+  flex-wrap: wrap; position: sticky; top: 0; z-index: 50; }
+.emergency-stop-bar-active { background: var(--err); }
+.emergency-stop-text { display: flex; flex-direction: column; }
+.emergency-stop-text strong { color: var(--err); font-size: 0.9rem; letter-spacing: 0.04em; }
+.emergency-stop-bar-active .emergency-stop-text strong { color: #fff; }
+.emergency-stop-note { font-size: 0.72rem; color: var(--muted); }
+.emergency-stop-btn { padding: 8px 16px; background: var(--err); color: #fff; border: none;
+  border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.85rem;
+  letter-spacing: 0.04em; }
+.emergency-stop-btn:hover { opacity: 0.88; }
+
+/* ── Sidebar (PC) ───────────────────────────────────────────── */
+.app-sidebar { width: 200px; background: var(--panel); border-right: 1px solid var(--border);
+  padding: 16px 8px; flex-shrink: 0; }
+.sidebar-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.sidebar-link { display: block; padding: 8px 12px; border-radius: 6px;
+  color: var(--text); font-size: 0.88rem; }
+.sidebar-link:hover { background: #21262d; }
+.sidebar-link.active { background: #0d2840; color: var(--accent);
+  border-left: 3px solid var(--accent); padding-left: 9px; }
+
+/* ── Mobile bottom nav ──────────────────────────────────────── */
+.mobile-nav { display: none; position: sticky; bottom: 0; background: var(--panel);
+  border-top: 1px solid var(--border); z-index: 40; }
+.mobile-nav-list { list-style: none; padding: 0; display: flex; justify-content: space-around; }
+.mobile-nav-list li { flex: 1; }
+.mobile-nav-link { display: block; text-align: center; padding: 10px 4px; font-size: 0.72rem;
+  color: var(--muted); }
+.mobile-nav-link.active { color: var(--accent); font-weight: 700; }
+
+/* ── Dashboard 카드 그리드 (1/2/3열 반응형) ─────────────────── */
+.dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 640px) {
+  .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .dashboard-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.status-card .status-card-value { font-size: 1.25rem; font-weight: 700;
+  color: var(--text); margin-bottom: 4px; }
+.status-card .status-card-desc { font-size: 0.78rem; color: var(--muted); }
+.card-danger { border-color: var(--err); }
+
+/* ── ModeBadge ──────────────────────────────────────────────── */
+.mode-badge { display: inline-block; padding: 3px 10px; border-radius: 12px;
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; }
+.mode-badge-paper { background: #1f3a16; color: var(--ok); }
+.mode-badge-mock  { background: #20243a; color: #a78bfa; }
+.mode-badge-live  { background: #2d1518; color: var(--err); border: 1px solid var(--err); }
+
+/* ── Strategy / Logs 보조 스타일 ────────────────────────────── */
+.tag-enabled { padding: 2px 8px; background: #1f3a16; color: var(--ok);
+  border-radius: 10px; font-size: 0.74rem; font-weight: 700; }
+.tag-disabled { padding: 2px 8px; background: #21262d; color: var(--muted);
+  border-radius: 10px; font-size: 0.74rem; font-weight: 700; }
+
+.tab-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.callout-info { padding: 10px 14px; background: #0d2840; border-left: 3px solid var(--accent);
+  color: var(--text); font-size: 0.85rem; border-radius: 4px; }
+.callout-warn { padding: 10px 14px; background: #3a3216; border-left: 3px solid var(--warn);
+  color: var(--text); font-size: 0.85rem; border-radius: 4px; }
+
+.setting-input { padding: 8px 10px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); font-family: inherit; font-size: 0.85rem;
+  width: 100%; max-width: 320px; }
+.setting-input:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── 모바일 전환 ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .app-sidebar { display: none; }
+  .mobile-nav { display: block; }
+  .app-layout-main { padding: 12px; padding-bottom: 70px; /* mobile-nav 여유 */ }
+  .emergency-stop-bar { padding: 8px 12px; }
+  .emergency-stop-bar strong { font-size: 0.82rem; }
+}

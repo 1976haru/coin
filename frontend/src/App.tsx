@@ -1,47 +1,18 @@
 /**
- * App 셸 — 체크리스트 #7 + #73·#74·#75·#80 Phase 9.
+ * App 셸 — 체크리스트 #7 Frontend Skeleton.
+ *
+ * 본 컴포넌트는 라우팅과 전역 Provider 만 담당한다. 레이아웃(사이드바/모바일
+ * 네비/EmergencyStopBar)과 페이지 렌더링은 `AppLayout` + `AppRoutes` 가 담당.
+ *
+ * 기존 Phase 9 위젯(#73-#76) Provider 는 그대로 유지된다.
  */
-import { NavLink, Route, Routes } from "react-router-dom";
-import Header from "./components/Header";
-import AdminTokenInput from "./components/AdminTokenInput";
-import VersionWatcher from "./components/VersionWatcher";
-import DashboardPage from "./pages/DashboardPage";
-import WatchlistPage from "./pages/WatchlistPage";
-import AuditPage from "./pages/AuditPage";
-import ApprovalsPage from "./pages/ApprovalsPage";
-import RiskPage from "./pages/RiskPage";
+import AppRoutes from "./app/routes";
 import { AdminTokenProvider } from "./contexts/AdminTokenContext";
 
 export default function App() {
   return (
     <AdminTokenProvider>
-      <div className="app-shell">
-        <VersionWatcher />
-        <div className="header-row">
-          <Header />
-          <AdminTokenInput />
-        </div>
-        <nav className="primary-nav">
-          <NavLink to="/" end className={navClass}>대시보드</NavLink>
-          <NavLink to="/approvals" className={navClass}>승인 대기열</NavLink>
-          <NavLink to="/risk" className={navClass}>Risk</NavLink>
-          <NavLink to="/watchlist" className={navClass}>Watchlist</NavLink>
-          <NavLink to="/audit" className={navClass}>Audit</NavLink>
-        </nav>
-        <main className="page">
-          <Routes>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/approvals" element={<ApprovalsPage />} />
-            <Route path="/risk" element={<RiskPage />} />
-            <Route path="/watchlist" element={<WatchlistPage />} />
-            <Route path="/audit" element={<AuditPage />} />
-          </Routes>
-        </main>
-      </div>
+      <AppRoutes />
     </AdminTokenProvider>
   );
-}
-
-function navClass({ isActive }: { isActive: boolean }) {
-  return isActive ? "nav-link active" : "nav-link";
 }

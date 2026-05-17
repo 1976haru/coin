@@ -1,4 +1,9 @@
-"""Health & Status 라우터 — /, /api/status."""
+"""Health & Status 라우터 — /, /api/health, /api/status.
+
+체크리스트 #6 Backend Skeleton: 단순 헬스체크 `/api/health` 는
+status / service / mode 만 노출 (load balancer / probe 용도).
+`/api/status` 는 운영자용 상세 스냅샷 (기존 유지).
+"""
 import os
 from fastapi import APIRouter
 from fastapi.responses import FileResponse
@@ -17,6 +22,20 @@ def root():
     info["docs"] = "/docs"
     info["warning"] = "research/paper-first system — LIVE 기본 비활성"
     return info
+
+
+@router.get("/api/health")
+def health():
+    """간단 헬스체크 — 체크리스트 #6 검증 기준.
+
+    mode 는 lowercase 로 노출 (paper/simulation/live_*) — 외부 probe 가
+    case-insensitive 비교 없이 사용 가능하게 한다. 상세는 `/api/status`.
+    """
+    return {
+        "status":  "ok",
+        "service": "autotrade-backend",
+        "mode":    settings.trading_mode.value.lower(),
+    }
 
 
 @router.get("/api/status")

@@ -1,6 +1,6 @@
 # Checklist Progress — 96항목 진척도
 
-마지막 업데이트: 2026-05-15 (복구 후 재정렬 — Phase 10 스크립트 6/10 실재 확인, pytest 1302 통과)
+마지막 업데이트: 2026-05-17 (1~12번 재검증 — 테스트 기준 PASS 재확인. ApprovalQueue 타입힌트 / Frontend tsconfig / FeatureFlags 모듈-식별자 오염 3건 복구. backend 1404 passed / 1 skipped, frontend typecheck·build·test 모두 통과. 13번 이후 미수정.)
 
 상태: ☐ 미착수 · ◔ 부분 · ◑ 절반 · ◕ 거의 완료 · ✅ PASS
 
@@ -242,3 +242,84 @@
 - `security_scan.py` 에 `# noqa: security-scan` per-line opt-out 추가 — 가짜 토큰 fixture 2건 (`test_audit_foundation.py`, `test_phase10_scripts.py`) 합법화
 - pytest 1302 통과 / 1 skip — 전체 그린
 - `security_scan.py` finding 0 / `mvp_gate.py` PASS / `pre_market_checklist.py` warning 1 (ADMIN_TOKEN 기본값)
+
+## 2026-05-17 1~12번 재검증 세션 메모
+
+작업 범위: 체크리스트 1~12번 PASS 여부를 *파일 존재* 가 아닌 *실 테스트 결과* 로 재확인. 13번 이후는 손대지 않음.
+
+### 1~12번 상태표 (실 테스트 기준)
+| # | 항목 | 상태 | 검증 근거 |
+|---:|---|:---:|---|
+| 1  | Product Scope         | ✅ | `tests/test_docs_product_scope.py` 통과 |
+| 2  | Strategy Portfolio    | ✅ | `tests/test_docs_strategy_portfolio.py` 통과 |
+| 3  | Operating Modes       | ✅ | `tests/test_mode_capabilities.py` + `tests/test_modes_flags.py` 통과 |
+| 4  | Safety Principles     | ✅ | `tests/test_docs_safety_principles.py` 통과 |
+| 5  | Agent Trader Naming   | ✅ | `tests/test_app_info_and_branding.py` 통과 (브랜드 드리프트 회귀 포함) |
+| 6  | Backend Skeleton      | ✅ | `tests/test_health.py` 통과 + 패키지 트리 정합 |
+| 7  | Frontend Skeleton     | ✅ | `tests/test_frontend_skeleton.py` 통과 + `npm run typecheck` / `npm run build` / `npm test` 모두 통과 |
+| 8  | Shared Schemas        | ✅ | `tests/test_schemas.py` 통과 (is_order_intent 강제 포함) |
+| 9  | Config Layer          | ✅ | `tests/test_config_layer.py` + `tests/test_config.py` 통과 (redaction / validate / .env.example 파리티) |
+| 10 | Feature Flags         | ✅ | `tests/test_feature_flags.py` 통과 (cross-test 모듈-식별자 오염 수정 후 안정) |
+| 11 | Audit Foundation      | ✅ | `tests/test_audit_foundation.py` + `tests/test_audit_events_helpers.py` 통과 |
+| 12 | CLAUDE.md             | ✅ | 루트 `CLAUDE.md` 존재 + 안전 원칙 회귀(`tests/test_docs_safety_principles.py`)에서 인용 검증 |
+
+### 이번 세션에서 복구한 결함
+
+1. **ApprovalQueue 타입힌트 잠재 버그** (`backend/app/execution/approval_queue.py`)
+   - `def list(self) -> list[dict]:` 가 class body 내에서 `list` 이름을 메서드로 가리고,
+     이후 `def pending(self) -> list[ApprovalItem]:` 의 annotation 이 `function not subscriptable`
+     TypeError 를 발생 (Python 3.14 lazy annotation 시점). `inspect.signature`/`typing.get_type_hints`
+     를 쓰는 외부 도구가 호출되면 즉시 깨짐.
+   - 수정: 파일 상단에 `from __future__ import annotations` 추가 — annotation 을
+     문자열로 보관하여 평가 시점을 늦춤. 동작 변경 0, 회귀 위험 0.
+
+2. **Frontend typecheck 스크립트 오류** (`frontend/package.json`)
+   - `tsc -b --noEmit` 는 TS5094: "Compiler option '--noEmit' may not be used with '--build'"
+     오류로 항상 실패. project references 빌드 모드에서 `--noEmit` 은 의미가 모호하기 때문.
+   - 수정: `typecheck` 를 `tsc -b` 로 단순화. 루트 `tsconfig.json` 은 이미 `noEmit: true`,
+     참조 프로젝트 `tsconfig.node.json` 은 composite (output 보존 필요) 이라 그대로 둠.
+   - 결과: `npm run typecheck`/`npm run build`/`npm test` 모두 그린.
+
+3. **FeatureFlags 모듈-식별자 cross-test 오염** (`backend/app/core/feature_flags.py`, `backend/tests/test_modes_flags.py`)
+   - `FeatureFlags` dataclass default 가 import 시점에 env 를 평가 (`_bool(...)` 호출)
+     하던 구조 → 환경변수 변경을 반영하려면 `importlib.reload` 필요했음.
+   - `test_modes_flags.py::_fresh_flags()` 가 `importlib.reload(app.core.feature_flags)` 호출 →
+     `FeatureDisabledError` 클래스 객체가 재생성 → 이후 `test_feature_flags.py` 의
+     `pytest.raises(FeatureDisabledError, ...)` 가 *과거 클래스* 를 잡으려 해 매칭 실패
+     (`test_assert_live_trading_blocked_by_default` 등 3개 실패).
+   - 수정:
+     - `FeatureFlags` 필드를 `field(default_factory=lambda: _bool(...))` 로 전환 → env 는
+       인스턴스 생성 시점에 평가. `importlib.reload` 불요.
+     - `_fresh_flags()` 는 단순 `get_feature_flags()` 호출로 단축.
+   - 결과: 단독 실행/병행 실행 모두 그린 (32/32).
+
+### 검증 결과
+
+**Backend** (`cd backend && python -m pytest -q`):
+- 1404 passed / 1 skipped / 0 failed
+
+**Backend focused (1~12번 범위)**:
+```
+python -m pytest \
+  tests/test_docs_product_scope.py tests/test_docs_strategy_portfolio.py \
+  tests/test_mode_capabilities.py tests/test_modes_flags.py \
+  tests/test_docs_safety_principles.py tests/test_app_info_and_branding.py \
+  tests/test_frontend_skeleton.py tests/test_schemas.py \
+  tests/test_config_layer.py tests/test_config.py \
+  tests/test_feature_flags.py tests/test_audit_foundation.py \
+  tests/test_audit_events_helpers.py tests/test_health.py -q
+```
+- 349 passed / 1 skipped / 0 failed
+
+**Frontend** (`cd frontend`):
+- `npm run typecheck` — exit 0, 출력 없음 (그린)
+- `npm run build` — `66 modules transformed`, `built in ~600ms`
+- `npm test` — 4 tests passed (App.test.tsx)
+
+### 작업 범위 확인
+
+- 13번 Database Schema 이후 항목은 손대지 않음. 기존 상태 그대로 유지.
+- 실거래 LIVE 주문 코드 추가 없음.
+- `ENABLE_LIVE_TRADING` / `ENABLE_AI_EXECUTION` / `ENABLE_CRYPTO_FUTURES_LIVE` 기본값 변경 없음 (모두 default False 유지).
+- frontend 에 secret/token/api key 추가 없음.
+- Upbit/OKX/Binance 실거래 연동 확장 없음.

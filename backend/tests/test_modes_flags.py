@@ -4,7 +4,6 @@
 실수로 위험 플래그가 기본 true 가 되는 것을 막는다.
 """
 import os
-import importlib
 
 import pytest
 
@@ -59,10 +58,13 @@ def _clean_env(monkeypatch):
 
 
 def _fresh_flags():
-    """모듈 캐시를 우회해 환경 기준으로 새로 로드."""
-    import app.core.feature_flags as ff
-    importlib.reload(ff)
-    return ff.get_feature_flags()
+    """현재 환경변수 기준으로 FeatureFlags 인스턴스 생성.
+
+    field(default_factory=...) 덕분에 인스턴스화 시점에 env 가 평가된다 —
+    importlib.reload 가 필요 없어 cross-test 모듈 식별자 오염도 사라진다.
+    """
+    from app.core.feature_flags import get_feature_flags
+    return get_feature_flags()
 
 
 def test_dangerous_flags_default_false():

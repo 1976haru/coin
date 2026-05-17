@@ -3,6 +3,8 @@
 체크리스트 #55 Manual Approval, #58 AI Assist (source 트래킹).
 이전 위치: app/risk/approval_queue.py
 """
+from __future__ import annotations
+
 from dataclasses import dataclass, asdict, field
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
