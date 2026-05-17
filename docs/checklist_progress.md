@@ -1,6 +1,6 @@
 # Checklist Progress — 96항목 진척도
 
-마지막 업데이트: 2026-05-17 (1~12번 재검증 — 테스트 기준 PASS 재확인. ApprovalQueue 타입힌트 / Frontend tsconfig / FeatureFlags 모듈-식별자 오염 3건 복구. backend 1404 passed / 1 skipped, frontend typecheck·build·test 모두 통과. 13번 이후 미수정.)
+마지막 업데이트: 2026-05-17 (#13 Database Schema 코인 스키마 추가 — coin_* 9 테이블 + 0003 마이그레이션 + crypto_database_schema.md. backend 1421 passed / 1 skipped. 14번 이후 미수정.)
 
 상태: ☐ 미착수 · ◔ 부분 · ◑ 절반 · ◕ 거의 완료 · ✅ PASS
 
@@ -27,7 +27,7 @@
 ## Phase 2 — 데이터/DB (7)
 | # | 항목 | 상태 |
 |---:|---|:---:|
-| 13 | Database Schema | ✅ | `app/db/{models,session,migrations/}` + `alembic.ini`. 4개 테이블(audit_events/orders/agent_decisions/positions). is_order_intent 기본 false 컬럼 강제. SQLAlchemy 2.0 + Alembic. |
+| 13 | Database Schema | ✅ | `app/db/{models,session,migrations/}` + `alembic.ini`. 4개 공통 테이블(audit_events/orders/agent_decisions/positions). is_order_intent 기본 false 컬럼 강제. SQLAlchemy 2.0 + Alembic. **2026-05-17 추가**: 코인 전용 9개 테이블 (coin_symbol/coin_candle/coin_tick/coin_orderbook_snapshot/coin_signal/coin_order/coin_trade/coin_position/coin_risk_event) + `0003_crypto_schema.py` 마이그레이션 + `docs/crypto_database_schema.md`. 가격/수량 Numeric(28,12). CoinSignal.used_for_order 기본 False (advisory). CoinOrder.mode 기본 "PAPER" (LIVE 아님). secret 컬럼 부재 회귀. |
 | 14 | Watchlist/Universe | ✅ | `WatchlistEntry` 모델 (list_name/symbol/exchange UNIQUE) + `app/market/watchlist.py` 서비스 (CRUD + list_names + remove_by_list) + `0002_watchlist.py` 마이그레이션 + REST API (`GET /api/watchlist`, `POST/DELETE/PATCH` admin 토큰) |
 | 15 | Market Data Collector | ✅ | `app/market/collector.py` (`MarketDataSource` Protocol + `MockMarketDataSource` 결정론 + `MarketDataCollector` ticker 캐시 + freshness 통합 + 예외 시 캐시 보존). REST: `GET /api/market/tickers`, `POST /api/market/collect` (admin, watchlist 기반). 거래소 SDK 직접 의존 없음 — 실제 source는 #21·#22에서 추가. |
 | 16 | Data Freshness | ✅ |

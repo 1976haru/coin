@@ -12,6 +12,8 @@
 """
 from .models import (
     Base, AuditEvent, Order, AgentDecisionRecord, Position, WatchlistEntry,
+    CoinSymbol, CoinCandle, CoinTick, CoinOrderbookSnapshot,
+    CoinSignal, CoinOrder, CoinTrade, CoinPosition, CoinRiskEvent,
 )
 from .session import (
     get_engine, get_session_factory, session_scope,
@@ -20,6 +22,8 @@ from .session import (
 
 __all__ = [
     "Base", "AuditEvent", "Order", "AgentDecisionRecord", "Position", "WatchlistEntry",
+    "CoinSymbol", "CoinCandle", "CoinTick", "CoinOrderbookSnapshot",
+    "CoinSignal", "CoinOrder", "CoinTrade", "CoinPosition", "CoinRiskEvent",
     "get_engine", "get_session_factory", "session_scope",
     "reset_engine", "create_all_tables", "get_database_url",
 ]
