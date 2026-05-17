@@ -7,6 +7,8 @@ __pycache__/
 venv/
 logs/*.csv
 logs/*.log
+**/logs/*.csv
+**/logs/*.log
 config/demo_state.json
 config/exchange_rate_cache.json
 trade_summary.json
