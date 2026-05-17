@@ -114,6 +114,24 @@ AdapterCapability(
 - 실제 주문 코드는 #21/#22/#23 후속 단계에서 별도 LIVE adapter 로 추가하며, 본
   READ_ONLY adapter 는 그대로 보존한다.
 
+### 6.1 Upbit 확장 (#21, 2026-05-18)
+
+`UpbitAdapter` 외에 4개 보조 모듈 추가:
+
+- `UpbitPublicClient` (`upbit_public.py`) — transport-주입 public quotation client
+  (markets / ticker / orderbook / candles_minutes / trades_ticks). path 화이트리스트
+  강제. 자세한 사용은 `docs/upbit_adapter.md`.
+- `parse_remaining_req` / `should_throttle` / `RateLimitState` (`upbit_rate_limit.py`)
+  — Remaining-Req 헤더 파싱 + 안전한 throttle 결정 + sleep_fn 주입.
+- `UpbitAccountClient` (`upbit_account.py`) — gated stub. credentials/transport
+  둘 다 없으면 `UpbitAccountPermissionError`. secret 미보관/미노출. /v1/accounts 만
+  화이트리스트.
+- `UpbitOrderClient` (`upbit_order.py`) — disabled stub. 모든 메서드 즉시
+  `ExchangeAdapterDisabledError`. JWT/HMAC signing 코드 부재.
+
+`UpbitAdapter` 가 `public_client` 인자로 `UpbitPublicClient` 를 주입받을 수 있으며,
+주입되면 transport 기반 경로를 사용하고 그렇지 않으면 legacy pyupbit 경로를 사용한다.
+
 ## 7. 단일 주문 경로 (CLAUDE.md §2.4)
 
 ```text

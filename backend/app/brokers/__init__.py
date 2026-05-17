@@ -11,7 +11,22 @@ from .base import (
 )
 from .paper_broker import PaperBroker, PaperOrderResult
 from .mock_broker import MockExchangeAdapter
-from .upbit_adapter import UpbitAdapter
+from .upbit_adapter import (
+    UpbitAdapter,
+    normalize_upbit_market, to_internal_symbol, is_krw_market,
+)
+from .upbit_public import (
+    UpbitPublicClient, UpbitPublicAPIError,
+    TransportResponse as UpbitTransportResponse,
+)
+from .upbit_account import (
+    UpbitAccountClient, UpbitAccountPermissionError,
+    AccountTransportResponse as UpbitAccountTransportResponse,
+)
+from .upbit_order import UpbitOrderClient, UpbitOrderClientCapability
+from .upbit_rate_limit import (
+    parse_remaining_req, should_throttle, RateLimitState,
+)
 from .okx_adapter import OkxAdapter
 from .binance_adapter import BinanceAdapter
 from .rate_limiter import (
@@ -27,6 +42,13 @@ __all__ = [
     "PaperBroker", "PaperOrderResult",
     "MockExchangeAdapter",
     "UpbitAdapter",
+    # Upbit #21 보조 모듈
+    "UpbitPublicClient", "UpbitPublicAPIError", "UpbitTransportResponse",
+    "UpbitAccountClient", "UpbitAccountPermissionError",
+    "UpbitAccountTransportResponse",
+    "UpbitOrderClient", "UpbitOrderClientCapability",
+    "normalize_upbit_market", "to_internal_symbol", "is_krw_market",
+    "parse_remaining_req", "should_throttle", "RateLimitState",
     "OkxAdapter",
     "BinanceAdapter",
     # rate limiter (#26)
