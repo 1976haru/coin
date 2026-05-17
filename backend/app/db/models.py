@@ -374,3 +374,67 @@ class CoinRiskEvent(Base):
     source_kind = Column(String(32), nullable=False, default="risk_manager")
     source_id   = Column(String(64), nullable=True)
     payload     = Column(JSON, nullable=False, default=dict)
+
+
+# 체크리스트 #18 Exchange Notices — 거래소 구조적 리스크 context 수집 계층.
+#
+# 본 테이블은 거래소 공지(입출금 중단, 유의종목, 상장폐지, 신규상장, 점검 등)를
+# 정규화한 후 영속화한다.
+#
+# 중요 (CLAUDE.md §2.3 / §2.5):
+#   - 본 데이터는 후보 필터와 리스크 설명 용도. 직접 주문 트리거가 아니다.
+#   - direct_order_allowed 컬럼은 영구 False — DB 레벨에서도 명시.
+#   - secret/PII는 저장하지 않음. body 는 거래소 공지 본문 텍스트만.
+#   - 중복 제거: (exchange, notice_id) UNIQUE 우선, 부재 시 (exchange, content_hash) UNIQUE.
+
+
+class ExchangeNotice(Base):
+    """거래소 공지 정규화 레코드 (#18).
+
+    notice_type 분류:
+        DEPOSIT_WITHDRAWAL_SUSPENSION / CAUTION / DELISTING / LISTING /
+        MAINTENANCE / TRADING_SUSPENSION / POLICY / OTHER
+
+    severity:
+        INFO / WARNING / HIGH / CRITICAL
+
+    중복 제거 키:
+        (exchange, notice_id) — notice_id 있을 때
+        (exchange, content_hash) — notice_id 없을 때
+    """
+
+    __tablename__ = "exchange_notice"
+
+    id                    = Column(Integer, primary_key=True, autoincrement=True)
+    exchange              = Column(String(32), nullable=False, index=True)
+    # 거래소측 notice id (있으면). 동일 (exchange, notice_id) 는 update.
+    notice_id             = Column(String(128), nullable=True, index=True)
+    title                 = Column(Text, nullable=False, default="")
+    url                   = Column(Text, nullable=False, default="")
+    category              = Column(String(64), nullable=False, default="")
+    notice_type           = Column(String(48), nullable=False, default="OTHER", index=True)
+    severity              = Column(String(16), nullable=False, default="INFO", index=True)
+    body                  = Column(Text, nullable=False, default="")
+    # symbol 배열 (정규화: upper). 본문/제목에서 추출되거나 source 가 제공.
+    symbols               = Column(JSON, nullable=False, default=list)
+    published_at          = Column(DateTime(timezone=True), nullable=True, index=True)
+    collected_at          = Column(DateTime(timezone=True), nullable=False, default=_utcnow, index=True)
+    # 중복 제거용 — 본문/제목 기반 sha256 해시 (notice_id 부재 시 사용).
+    content_hash          = Column(String(64), nullable=False, default="", index=True)
+    # 원본 source 이름 (mock, upbit_rss, ...). secret 없음.
+    source_name           = Column(String(64), nullable=False, default="mock")
+    # 영구 False — 본 레코드 자체로 주문 행위를 허가하지 않는다 (CLAUDE.md §2.3).
+    direct_order_allowed  = Column(Boolean, nullable=False, default=False)
+    # 사람이 읽는 자유 텍스트 (수집기/분류기가 부가 설명을 남김).
+    note                  = Column(Text, nullable=False, default="")
+    raw_payload           = Column(JSON, nullable=False, default=dict)
+    updated_at            = Column(DateTime(timezone=True), nullable=False,
+                                   default=_utcnow, onupdate=_utcnow)
+
+    __table_args__ = (
+        UniqueConstraint("exchange", "notice_id",
+                         name="uq_exchange_notice_exchange_notice_id"),
+        UniqueConstraint("exchange", "content_hash",
+                         name="uq_exchange_notice_exchange_content_hash"),
+        Index("ix_exchange_notice_type_severity", "notice_type", "severity"),
+    )

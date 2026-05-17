@@ -51,6 +51,10 @@ docker compose up -d
 | POST | `/api/kill-switch`             | 킬 스위치 (admin) |
 | POST | `/api/promotion/paper-gate`    | PAPER → SHADOW 승격 평가 (admin) |
 | GET  | `/api/audit`                   | 감사 로그 (admin) |
+| GET  | `/api/notices`                 | 거래소 공지 (legacy + 영속 ExchangeNotice, #18) |
+| POST | `/api/notices/collect`         | 공지 수집 1회 실행 (admin, mock source 기본, #18) |
+| GET  | `/api/notices/context`         | Agent용 read-only notice context (`direct_order_allowed=false`, #18) |
+| GET  | `/api/notices/types`           | notice_type / severity 카탈로그 |
 
 상세는 FastAPI `/docs`.
 

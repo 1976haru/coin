@@ -252,7 +252,13 @@ def test_api_get_notices_empty(app_with_clean_notices):
     client = TestClient(app)
     r = client.get("/api/notices")
     assert r.status_code == 200
-    assert r.json() == {"notices": [], "count": 0}
+    body = r.json()
+    # 체크리스트 #18 — 응답 shape 확장 (legacy notices 유지 + 영속 layer + 요약).
+    assert body["notices"] == []
+    assert body["count"] == 0
+    assert body["direct_order_allowed"] is False
+    assert "exchange_notices" in body
+    assert "summary" in body
 
 
 def test_api_post_requires_admin(app_with_clean_notices):

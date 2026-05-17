@@ -179,11 +179,27 @@ class ThemeInsightAgent:
             notices=ctx.get("notices_registry"),
             kimp_pct=ctx.get("kimp_pct"),
         )
-        # 거래 결정은 내리지 않고 HOLD + briefing 을 explain_text 로
+
+        # 체크리스트 #18 — NoticeContextBuilder 결과(read-only)를 explain_text 에
+        # 부가 정보로 첨부한다. 직접 주문 트리거가 아니며 outlook 산출에도 영향
+        # 없음 (legacy 경로 보존). ctx["notice_context"] 는
+        # NoticeContextBuilder.build_notice_context(...).to_dict() 결과 형식.
+        text = self.render_text(b, format="markdown")
+        nc = ctx.get("notice_context")
+        if isinstance(nc, dict) and nc.get("total_notices", 0) > 0:
+            summary = nc.get("human_summary", "")
+            high = nc.get("high_risk_symbols") or []
+            text = text + "\n\n### 🔔 거래소 공지 컨텍스트 (#18)\n"
+            if summary:
+                text += f"- {summary}\n"
+            if high:
+                text += f"- 고위험 심볼: {', '.join(high[:10])}\n"
+            text += "- _공지 이벤트는 후보 필터/리스크 설명용이며 직접 주문 트리거가 아닙니다._\n"
+
         return AgentDecision(
             "HOLD", 0.0,
             f"ThemeInsightAgent: 브리핑 ({b.overall_outlook})",
-            explain_text=self.render_text(b, format="markdown"),
+            explain_text=text,
         )
 
     # ── 내부 — 각 source 수집 ───────────────────────────────────

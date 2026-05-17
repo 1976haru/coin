@@ -15,6 +15,7 @@ from app.audit.audit_log import AuditLog
 from app.market.collector import MarketDataCollector, MockMarketDataSource
 from app.market.freshness import FreshnessTracker, policy_from_settings
 from app.market.notices import NoticeRegistry
+from app.market.notice_collector import NoticeCollector, MockNoticeSource
 from app.market.themes import ThemeRegistry, NewsRegistry
 from app.strategies.kimp_mean_reversion import KimpMeanReversionStrategy
 from app.strategies.strategies import (
@@ -50,8 +51,13 @@ collector       = MarketDataCollector(
     freshness_tracker=freshness_tracker,
 )
 
-# 체크리스트 #18: 거래소 공지 레지스트리 (메모리)
+# 체크리스트 #18: 거래소 공지 레지스트리 (메모리) + DB-backed collector.
+# - notices (legacy 메모리 레지스트리) 는 KimpStrategy 호환용으로 유지.
+# - notice_collector 는 영속 ExchangeNotice 테이블에 정규화 공지를 적재한다.
 notices         = NoticeRegistry()
+notice_collector = NoticeCollector(
+    sources={"mock": MockNoticeSource("mock")},
+)
 
 # 체크리스트 #19: 테마/뉴스 레지스트리 (메모리)
 themes_registry = ThemeRegistry()
@@ -96,6 +102,10 @@ def get_freshness_tracker() -> FreshnessTracker:
 
 def get_notices() -> NoticeRegistry:
     return notices
+
+
+def get_notice_collector() -> NoticeCollector:
+    return notice_collector
 
 
 def get_themes() -> ThemeRegistry:
