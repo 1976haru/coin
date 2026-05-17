@@ -21,6 +21,11 @@ from app.market.freshness import (
 )
 from app.market.market_persister import persist_report
 from app.market.watchlist import WatchlistService
+from app.market.data_quality import (
+    DataQualityConfig,
+    load_candles_for_day, run_day_check,
+    BacktestPromotionGuard,
+)
 
 from .deps import (
     settings, get_collector, get_db, verify_admin, get_freshness_tracker,
@@ -308,3 +313,50 @@ def collector_status(
     public — secret 노출 없음.
     """
     return collector.last_status()
+
+
+# ── #17 Data Quality ────────────────────────────────────────────
+
+@router.get("/api/market/data-quality/summary")
+def data_quality_summary(
+    symbol: str,
+    exchange: str,
+    timeframe: str,
+    date: str,
+    db: Session = Depends(get_db),
+):
+    """단일 (symbol, exchange, timeframe, date) 일별 품질 등급 + promotion 판정.
+
+    public — secret 노출 없음. 외부 거래소 호출 없음. coin_candle 만 읽는다.
+
+    Query:
+      - symbol   (required)
+      - exchange (required)
+      - timeframe (required, 1m/5m/15m/1h/4h/1d)
+      - date     (required, YYYY-MM-DD)
+
+    응답:
+      - report     : DataQualityDayReport.as_dict()
+      - promotion  : 단일-일 기준 PromotionGuard 결과
+    """
+    from datetime import date as _date
+    try:
+        day = _date.fromisoformat(date)
+    except ValueError:
+        raise HTTPException(400, f"invalid date: {date!r} (expected YYYY-MM-DD)")
+    if timeframe not in {"1m", "5m", "15m", "1h", "4h", "1d"}:
+        raise HTTPException(400, f"unsupported timeframe: {timeframe!r}")
+
+    candles = load_candles_for_day(
+        db, symbol=symbol, exchange=exchange,
+        timeframe=timeframe, day=day,
+    )
+    rep = run_day_check(
+        candles, symbol=symbol, exchange=exchange,
+        timeframe=timeframe, day=day, config=DataQualityConfig(),
+    )
+    promo = BacktestPromotionGuard().evaluate([rep])
+    return {
+        "report":    rep.as_dict(),
+        "promotion": promo.as_dict(),
+    }
