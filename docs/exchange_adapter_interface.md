@@ -132,6 +132,30 @@ AdapterCapability(
 `UpbitAdapter` 가 `public_client` 인자로 `UpbitPublicClient` 를 주입받을 수 있으며,
 주입되면 transport 기반 경로를 사용하고 그렇지 않으면 legacy pyupbit 경로를 사용한다.
 
+### 6.2 OKX 확장 (#22, 2026-05-18)
+
+`OkxAdapter` 외에 4개 보조 모듈 추가 (Upbit 와 동일 패턴 + spot/swap 분리):
+
+- `OkxPublicClient` (`okx_public.py`) — transport-주입 public market data client
+  (instruments / ticker / orderbook / candles / funding-rate). path 화이트리스트
+  강제. 자세한 사용은 `docs/okx_adapter.md`.
+- `parse_okx_api_error` / `is_okx_rate_limit_error` / `should_throttle_okx` /
+  `OkxRateLimitState` (`okx_rate_limit.py`) — OKX 응답의 `{"code", "msg", "data"}`
+  파싱 + 코드 50011 (rate-limit) 감지 + sleep_fn 주입.
+- `OkxAccountClient` (`okx_account.py`) — gated stub. key+secret+passphrase 셋
+  모두 + transport 가 있어야 동작. secret 미보관/미노출. `/api/v5/account/balance` +
+  `positions` 만 화이트리스트.
+- `OkxTradeClient` (`okx_trade.py`) — disabled stub. place/cancel/amend/get/
+  leverage/margin-mode 모두 `ExchangeAdapterDisabledError`. OK-ACCESS-* signing
+  코드 부재.
+- `OkxPaperOrderClient` (`okx_trade.py`) — 결정론적 spot/swap PAPER 엔진. 외부
+  네트워크 호출 없음, `mode=LIVE` 거부, client_order_id idempotent, 잔고 부족
+  REJECTED, leverage/margin/reduce_only 는 입력만 받고 실제 미적용, audit secret
+  sanitize. SWAP 주문은 `inst_id` 가 `-SWAP` 으로 끝나야 함 (SPOT 은 반대).
+
+`OkxAdapter` 가 `public_client` 인자로 `OkxPublicClient` 를 주입받을 수 있으며,
+주입되면 transport 기반 경로를 사용하고 그렇지 않으면 legacy ccxt 경로를 사용한다.
+
 ## 7. 단일 주문 경로 (CLAUDE.md §2.4)
 
 ```text

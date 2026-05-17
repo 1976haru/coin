@@ -27,7 +27,29 @@ from .upbit_order import UpbitOrderClient, UpbitOrderClientCapability
 from .upbit_rate_limit import (
     parse_remaining_req, should_throttle, RateLimitState,
 )
-from .okx_adapter import OkxAdapter
+from .okx_adapter import (
+    OkxAdapter,
+    normalize_okx_inst_id, infer_okx_inst_type,
+    to_internal_symbol as okx_to_internal_symbol,
+)
+from .okx_public import (
+    OkxPublicClient, OkxPublicAPIError,
+    OkxTransportResponse,
+    ALLOWED_INST_TYPES as OKX_ALLOWED_INST_TYPES,
+    ALLOWED_BARS as OKX_ALLOWED_BARS,
+)
+from .okx_account import (
+    OkxAccountClient, OkxAccountPermissionError,
+    OkxAccountTransportResponse,
+)
+from .okx_trade import (
+    OkxTradeClient, OkxTradeClientCapability, OkxPaperOrderClient,
+)
+from .okx_rate_limit import (
+    OkxApiError, OkxRateLimitState,
+    parse_okx_api_error, is_okx_rate_limit_error, should_throttle_okx,
+    OKX_RATE_LIMIT_CODES,
+)
 from .binance_adapter import BinanceAdapter
 from .rate_limiter import (
     TokenBucket, RateLimitSpec, RATE_LIMITS, DEFAULT_SPEC,
@@ -50,6 +72,16 @@ __all__ = [
     "normalize_upbit_market", "to_internal_symbol", "is_krw_market",
     "parse_remaining_req", "should_throttle", "RateLimitState",
     "OkxAdapter",
+    # OKX #22 보조 모듈
+    "OkxPublicClient", "OkxPublicAPIError", "OkxTransportResponse",
+    "OkxAccountClient", "OkxAccountPermissionError",
+    "OkxAccountTransportResponse",
+    "OkxTradeClient", "OkxTradeClientCapability", "OkxPaperOrderClient",
+    "OkxApiError", "OkxRateLimitState",
+    "OKX_RATE_LIMIT_CODES", "OKX_ALLOWED_INST_TYPES", "OKX_ALLOWED_BARS",
+    "parse_okx_api_error", "is_okx_rate_limit_error", "should_throttle_okx",
+    "normalize_okx_inst_id", "infer_okx_inst_type",
+    "okx_to_internal_symbol",
     "BinanceAdapter",
     # rate limiter (#26)
     "TokenBucket", "RateLimitSpec", "RATE_LIMITS", "DEFAULT_SPEC",
