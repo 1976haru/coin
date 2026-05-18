@@ -13,6 +13,9 @@ from app.execution.order_gateway import OrderGateway
 from app.brokers.paper_broker import PaperBroker
 from app.brokers.paper_trader import PaperTrader
 from app.brokers.paper_market_broker import PaperMarketBrokerConfig
+from app.brokers.rate_limit_guard import (
+    ExchangeRateLimitRegistry, build_default_registry,
+)
 from app.audit.audit_log import AuditLog
 from app.market.collector import MarketDataCollector, MockMarketDataSource
 from app.market.freshness import FreshnessTracker, policy_from_settings
@@ -70,6 +73,11 @@ news_registry   = NewsRegistry()
 theme_signal_collector = ThemeSignalCollector(
     providers={"mock": MockThemeProvider()},
 )
+
+# 체크리스트 #26: 거래소별 API rate-limit guard registry (싱글톤).
+# 기본 정책 (upbit/okx/binance/mock/paper) 을 모두 사전 로드.
+rate_limit_registry = build_default_registry(preload=True)
+
 
 # 체크리스트 #25: PaperTrader (read-only 시세 source 기반 paper-trading 컨트롤러).
 # 기본 source 는 mock. 운영자가 /api/paper/source 로 변경 가능.
@@ -142,6 +150,10 @@ def get_theme_signal_collector() -> ThemeSignalCollector:
 
 def get_paper_trader() -> PaperTrader:
     return paper_trader
+
+
+def get_rate_limit_registry() -> ExchangeRateLimitRegistry:
+    return rate_limit_registry
 
 
 def verify_admin(x_admin_token: str = Header(default="")):

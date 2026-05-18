@@ -90,6 +90,21 @@ from .rate_limiter import (
     RateLimitExceeded, RateLimitTimeout,
     get_limiter_for, rate_limited,
 )
+from .api_limits import (
+    RateLimitPolicy,
+    list_default_policies, get_default_policy,
+    parse_upbit_remaining_req, parse_okx_error,
+    parse_binance_used_weight as parse_binance_used_weight_canonical,
+    parse_retry_after,
+)
+from .rate_limit_guard import (
+    AcquireDecision, RetryDecision, GuardState,
+    RateLimitGuard, ExchangeRateLimitRegistry,
+    build_default_registry,
+    ERROR_KIND_429, ERROR_KIND_418, ERROR_KIND_OKX_50011,
+    ERROR_KIND_UPBIT_TOO_MANY, ERROR_KIND_NETWORK,
+    ERROR_KIND_AUTH, ERROR_KIND_INVALID, ERROR_KIND_UNKNOWN,
+)
 
 __all__ = [
     "ExchangeAdapter", "AdapterCapability", "AdapterMode",
@@ -139,4 +154,14 @@ __all__ = [
     "TokenBucket", "RateLimitSpec", "RATE_LIMITS", "DEFAULT_SPEC",
     "RateLimitExceeded", "RateLimitTimeout",
     "get_limiter_for", "rate_limited",
+    # rate-limit policy + guard (#26)
+    "RateLimitPolicy",
+    "list_default_policies", "get_default_policy",
+    "parse_upbit_remaining_req", "parse_okx_error",
+    "parse_binance_used_weight_canonical", "parse_retry_after",
+    "AcquireDecision", "RetryDecision", "GuardState",
+    "RateLimitGuard", "ExchangeRateLimitRegistry", "build_default_registry",
+    "ERROR_KIND_429", "ERROR_KIND_418", "ERROR_KIND_OKX_50011",
+    "ERROR_KIND_UPBIT_TOO_MANY", "ERROR_KIND_NETWORK",
+    "ERROR_KIND_AUTH", "ERROR_KIND_INVALID", "ERROR_KIND_UNKNOWN",
 ]
