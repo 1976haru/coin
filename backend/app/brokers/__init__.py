@@ -50,7 +50,29 @@ from .okx_rate_limit import (
     parse_okx_api_error, is_okx_rate_limit_error, should_throttle_okx,
     OKX_RATE_LIMIT_CODES,
 )
-from .binance_adapter import BinanceAdapter
+from .binance_adapter import (
+    BinanceAdapter,
+    normalize_binance_symbol,
+    to_internal_symbol as binance_to_internal_symbol,
+    is_supported_binance_quote,
+)
+from .binance_public import (
+    BinancePublicClient, BinancePublicAPIError,
+    BinanceTransportResponse,
+    BINANCE_PUBLIC_DATA_HOST,
+    ALLOWED_KLINE_INTERVALS as BINANCE_ALLOWED_KLINE_INTERVALS,
+)
+from .binance_account import (
+    BinanceAccountClient, BinanceAccountPermissionError,
+)
+from .binance_trade import (
+    BinanceTradeClient, BinanceTradeClientCapability,
+)
+from .binance_rate_limit import (
+    BinanceRateLimitState,
+    parse_binance_used_weight, should_throttle_binance,
+    DEFAULT_WEIGHT_SOFT_LIMIT as BINANCE_WEIGHT_SOFT_LIMIT,
+)
 from .rate_limiter import (
     TokenBucket, RateLimitSpec, RATE_LIMITS, DEFAULT_SPEC,
     RateLimitExceeded, RateLimitTimeout,
@@ -83,6 +105,16 @@ __all__ = [
     "normalize_okx_inst_id", "infer_okx_inst_type",
     "okx_to_internal_symbol",
     "BinanceAdapter",
+    # Binance #23 보조 모듈
+    "BinancePublicClient", "BinancePublicAPIError", "BinanceTransportResponse",
+    "BinanceAccountClient", "BinanceAccountPermissionError",
+    "BinanceTradeClient", "BinanceTradeClientCapability",
+    "BinanceRateLimitState",
+    "BINANCE_PUBLIC_DATA_HOST", "BINANCE_ALLOWED_KLINE_INTERVALS",
+    "BINANCE_WEIGHT_SOFT_LIMIT",
+    "parse_binance_used_weight", "should_throttle_binance",
+    "normalize_binance_symbol", "binance_to_internal_symbol",
+    "is_supported_binance_quote",
     # rate limiter (#26)
     "TokenBucket", "RateLimitSpec", "RATE_LIMITS", "DEFAULT_SPEC",
     "RateLimitExceeded", "RateLimitTimeout",

@@ -156,6 +156,32 @@ AdapterCapability(
 `OkxAdapter` 가 `public_client` 인자로 `OkxPublicClient` 를 주입받을 수 있으며,
 주입되면 transport 기반 경로를 사용하고 그렇지 않으면 legacy ccxt 경로를 사용한다.
 
+### 6.3 Binance 확장 (#23, 2026-05-18) — research/skeleton + regulatory gate
+
+`BinanceAdapter` 외에 4개 보조 모듈 추가. **Binance 는 OKX 와 달리 PAPER 주문
+엔진을 만들지 않는다** — 규제·지역 제한 확인 전 일체 차단이라는 정책 (CLAUDE.md
+§2.4 / §2.6) 을 코드 레벨에서 강제하기 때문이다.
+
+- `BinancePublicClient` (`binance_public.py`) — transport-주입 public market data
+  client (exchangeInfo / ticker.24hr / depth / klines / time). path 화이트리스트
+  강제. native `BTCUSDT` 형식 강제 (slash/dash 거부). 권장 host
+  `data-api.binance.vision` 상수화. 자세한 사용은 `docs/binance_adapter.md`.
+- `parse_binance_used_weight` / `BinanceRateLimitState` (`binance_rate_limit.py`) —
+  `X-MBX-USED-WEIGHT(-1M)` + `X-MBX-ORDER-COUNT-{10S,1M}` 헤더 파싱 + sleep_fn 주입.
+  1분 soft limit 기본 960 (= 80% of 1200).
+- `BinanceAccountClient` (`binance_account.py`) — **regulatory gate stub**. 본
+  단계는 read-only research/skeleton 이라 credentials 가 들어와도 *모든* 메서드가
+  즉시 `BinanceAccountPermissionError`. secret 미보관/미노출. 출금 메서드 부재.
+- `BinanceTradeClient` (`binance_trade.py`) — **regulatory gate stub**. 모든 trading
+  동작 (place/cancel/get/leverage/margin-type/futures/margin) 호출 시
+  `ExchangeAdapterDisabledError`. `DISABLED_REASON =
+  "binance_live_trading_disabled_until_regulatory_review"` 상수. HMAC signing 코드
+  부재. 실제 trade endpoint URL literal 부재.
+
+`BinanceAdapter` 가 `public_client` 인자로 `BinancePublicClient` 를 주입받을 수
+있으며, 주입되면 transport 기반 경로를 사용하고 그렇지 않으면 legacy ccxt 경로를
+사용한다.
+
 ## 7. 단일 주문 경로 (CLAUDE.md §2.4)
 
 ```text
