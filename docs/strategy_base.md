@@ -296,6 +296,12 @@ python -m pytest tests/test_strategy_contract.py tests/test_strategy_base.py -q
   은 후보 표시이며 leg_bias 는 *설명 context*. `capability.supports_pair=True`
   + `preferred_regimes` = RANGE / MEAN_REVERSION / RELATIVE_VALUE. pair label
   `symbol="A,B"` 형식 필요.
+- [`docs/kimp_formula.md`](kimp_formula.md) — 체크리스트 #34 Kimp Formula Calculator.
+  *계산 모듈* (전략 아님). `backend/app/market/kimp_calculator.py` — Decimal 기반
+  표준 김프/역김프 계산 + Direction/ConvergenceState/DislocationKind + FX anomaly
+  + fee/funding/transfer adjusted helper + KimpAgent hook (build_kimp_context /
+  classify_structural_vs_temporary_dislocation). KimpStrategy(#33) / KimpAgent /
+  RiskManager 가 동일 계산 결과를 참조한다. `direct_order_allowed=False` 영구.
 
 ## 9. 후속 단계
 
