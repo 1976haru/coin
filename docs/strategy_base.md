@@ -282,6 +282,12 @@ cd backend
 python -m pytest tests/test_strategy_contract.py tests/test_strategy_base.py -q
 ```
 
+## 8.1 구현 예시 (#30)
+
+- [`docs/trend_following.md`](trend_following.md) — `TrendFollowingContractStrategy`
+  가 본 ABC 의 첫 신규 구현체. EMA/SMA/Donchian/ADX + freshness/quality/notice/
+  theme context 통합 안전 가드.
+
 ## 9. 후속 단계
 
 - 30번 Trend Following 이후 — 본 ABC contract 를 기존 전략에 점진적 마이그레이션
