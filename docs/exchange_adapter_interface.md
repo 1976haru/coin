@@ -67,6 +67,22 @@ base `place_order` 는 두 가지 LIVE 차단을 강제한다.
 
 따라서 어떤 경로로도 LIVE 키 / LIVE flag 없이 실주문이 송신되지 않는다.
 
+## 4.1 `MockExchangeAdapter` vs `MockBroker` (#20 / #24)
+
+이 저장소에는 두 개의 mock 컴포넌트가 있다 — 역할이 다르다.
+
+| | `MockExchangeAdapter` (`mock_broker.py`) | `MockBroker` (`mock_simulation.py`) |
+|---|---|---|
+| 종류 | ExchangeAdapter 구현체 | 시뮬레이션 브로커 facade |
+| 용도 | `MarketDataSource` Protocol + ExchangeAdapter contract 검증 | OrderGateway drop-in + 주문 라이프사이클 시뮬 |
+| 잔고 | 단일 USDT | 다중 자산 free + locked |
+| 포지션 | (없음) | qty + avg_entry_price + realized/unrealized PnL |
+| LIMIT book | (없음, MARKET 즉시 FILLED) | open book + cancel locked 해제 |
+| 시그니처 | `place_order(OrderRequest \| dict) → OrderResult` | `place_order(dict) → dict` (PaperBroker 호환) |
+
+둘 다 외부 네트워크 호출 없음 + LIVE 거부 + secret 미보관. 자세한 내용:
+`docs/mock_broker.md`.
+
 ## 5. MockExchangeAdapter
 
 결정론적 paper-only adapter. 외부 네트워크 호출 없음, API 키 없음.
