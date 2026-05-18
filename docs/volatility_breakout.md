@@ -300,8 +300,9 @@ python -m pytest tests/test_volatility_breakout.py -q     # 기존 1차 회귀
 
 ## 13. 후속 단계
 
-- 32번 Pair Trading / 33번 Kimp Mean Reversion / 34번 Funding Rate 도 동일 패턴
-  (`*_contract.py` + ABC 구현)으로 추가 가능.
+- 32번 Pair Trading (✅ 2026-05-18 [`docs/pair_trading.md`](pair_trading.md))
+  / 33번 Kimp Mean Reversion / 34번 Funding Rate 도 동일 패턴 (`*_contract.py` +
+  ABC 구현)으로 추가 가능.
 - `StrategySelectionAgent` 본격 구현 — LLM 또는 정교한 휴리스틱으로 regime
   detection 강화.
 - 전략 결과 → AgentOrchestrator → RiskManager → OrderGateway 통합은 별도 PR.

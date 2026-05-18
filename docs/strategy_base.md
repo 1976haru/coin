@@ -282,7 +282,7 @@ cd backend
 python -m pytest tests/test_strategy_contract.py tests/test_strategy_base.py -q
 ```
 
-## 8.1 구현 예시 (#30, #31)
+## 8.1 구현 예시 (#30, #31, #32)
 
 - [`docs/trend_following.md`](trend_following.md) — `TrendFollowingContractStrategy`
   가 본 ABC 의 첫 신규 구현체. EMA/SMA/Donchian/ADX + freshness/quality/notice/
@@ -291,6 +291,11 @@ python -m pytest tests/test_strategy_contract.py tests/test_strategy_base.py -q
   `VolatilityBreakoutContractStrategy`. ATR 변동성 확장 + 직전 N봉 high/low
   돌파 + 거래량 확장 필터 + 초고변동 시 sizing 자동 축소. `preferred_regimes` =
   RANGE / TREND_UP / TREND_DOWN.
+- [`docs/pair_trading.md`](pair_trading.md) — `PairTradingContractStrategy`.
+  BTC-ETH/SOL 등 페어 OLS hedge ratio + spread z-score 평균회귀. `BUY`/`SELL`
+  은 후보 표시이며 leg_bias 는 *설명 context*. `capability.supports_pair=True`
+  + `preferred_regimes` = RANGE / MEAN_REVERSION / RELATIVE_VALUE. pair label
+  `symbol="A,B"` 형식 필요.
 
 ## 9. 후속 단계
 
