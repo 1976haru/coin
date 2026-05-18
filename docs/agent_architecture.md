@@ -329,6 +329,11 @@ CLAUDE.md §2.6 — 체크리스트 PASS 는 실거래 허가가 아니다.
 - 구현: `backend/app/agents/base.py` (#37 — 기존 4-agent layer + 6-role
   Architecture layer 공존)
 - 회귀: `backend/tests/test_agent_architecture_v2.py` (6-role layer)
+- Observer 구현 예시 (#38): `backend/app/agents/market_observer.py` /
+  `docs/market_observer.md` — `MarketObserverAgent` (OBSERVER role
+  specialization, market breadth / volume flow / top movers / sector flow /
+  volatility regime / data health 6개 관찰 영역, `MarketObserverOutput.direct_order_allowed=False`
+  / `broker_call_allowed=False` 영구)
 - 기존 회귀: `backend/tests/test_agent_architecture.py` (4-agent layer)
 - 가드 연동: `backend/app/strategies/kimp_risk_guards.py` (#35) /
   `backend/app/risk/funding.py` (#36)
