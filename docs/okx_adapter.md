@@ -2,6 +2,11 @@
 
 > Agent Trader Crypto OS v1 — OKX spot/swap read-only adapter + paper/mock 주문 + gated private
 
+## 0.1 관련 정책 문서
+
+- API key 권한 정책: [`docs/api_key_policy.md`](api_key_policy.md) — `api_key + secret + passphrase` 셋 모두 비밀, 출금 권한 영구 금지.
+- Rate limit 정책: [`docs/api_limits.md`](api_limits.md) — OKX 코드 50011 처리.
+
 ## 1. 목적과 범위
 
 OkxAdapter 는 OKX spot/swap 시세·호가·캔들·funding rate 조회를 위한 **read-only

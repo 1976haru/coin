@@ -9,6 +9,11 @@
 별도 phase + **규제·지역 제한 확인** + 별도 LIVE adapter + OrderGateway 끝단 호출 +
 별도 환경변수 + 별도 승인 절차 통과 후에만 가능 (CLAUDE.md §2.4 / §2.6).
 
+## 0.1 관련 정책 문서
+
+- API key 권한 정책: [`docs/api_key_policy.md`](api_key_policy.md) — Binance Global vs Binance.US 구분, Enable Withdrawals 영구 금지, Internal Transfer 금지.
+- Rate limit 정책: [`docs/api_limits.md`](api_limits.md) — `X-MBX-USED-WEIGHT` + 429/418 처리.
+
 ## 1. 목적과 범위
 
 Binance 는 해외 유동성 비교용 **2차 후보 거래소** 다 (1차: OKX). 본 단계는

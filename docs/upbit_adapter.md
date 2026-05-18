@@ -2,6 +2,11 @@
 
 > Agent Trader Crypto OS v1 — 업비트 read-only adapter + 주문/잔고 gated stub
 
+## 0.1 관련 정책 문서
+
+- API key 권한 정책: [`docs/api_key_policy.md`](api_key_policy.md) — 출금 권한 영구 금지, IP allowlist 필수, 스크린샷 마스킹 규칙.
+- Rate limit 정책: [`docs/api_limits.md`](api_limits.md) — Upbit `Remaining-Req` 헤더 처리.
+
 ## 1. 목적과 범위
 
 UpbitAdapter 는 국내 KRW 가격·호가 조회를 위한 **read-only adapter** 다.
