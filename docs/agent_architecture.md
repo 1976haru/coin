@@ -334,6 +334,13 @@ CLAUDE.md §2.6 — 체크리스트 PASS 는 실거래 허가가 아니다.
   specialization, market breadth / volume flow / top movers / sector flow /
   volatility regime / data health 6개 관찰 영역, `MarketObserverOutput.direct_order_allowed=False`
   / `broker_call_allowed=False` 영구)
+- Strategy Researcher 구현 예시 (#39): `backend/app/agents/news_trend_agent.py`
+  / `docs/news_trend_agent.md` — `NewsTrendAgent` (STRATEGY_RESEARCHER role
+  specialization, 키워드 증가 / 뉴스 증가 / 공시 이벤트 / 테마 후보 + attention
+  score / hype risk 노트, `NewsTrendAgentOutput.direct_order_allowed=False`
+  / `broker_call_allowed=False` / `used_for_order=False` 영구,
+  `ThemeCandidate.used_for_order=False` 영구, 외부 뉴스/트렌드/공시 API 직접
+  호출 0 — 입력 dict 만 받음)
 - 기존 회귀: `backend/tests/test_agent_architecture.py` (4-agent layer)
 - 가드 연동: `backend/app/strategies/kimp_risk_guards.py` (#35) /
   `backend/app/risk/funding.py` (#36)
