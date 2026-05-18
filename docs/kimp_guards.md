@@ -327,6 +327,10 @@ CLAUDE.md §2.6 — 체크리스트 PASS 는 실거래 허가가 아니다.
 - 회귀: `backend/tests/test_kimp_risk_guards.py` (52 케이스)
 - 기존 (#35 1차, KimpStrategy 의존): `backend/app/strategies/kimp_guards.py`
 - 계산 (#34): `backend/app/market/kimp_calculator.py` / `docs/kimp_formula.md`
+- 펀딩 비용 가드 (#36): `backend/app/risk/funding.py` / `docs/funding_cost_guard.md` —
+  본 가드의 `check_funding_risk` 가 단순 rate threshold 만 본다면, FundingCostGuard
+  는 cost_to_edge_ratio / 누적 비용 / 거래소별 interval 까지 반영한 구조적
+  `FundingGuardDecision` 을 제공한다 (KimpStrategy / KimpAgent 가 함께 참조 가능).
 - 전략 (#33): `backend/app/strategies/kimp_mean_reversion.py`
 - 공지 (#18): `backend/app/market/notice_context.py`
 - 데이터 freshness (#16): `backend/app/market/freshness.py`
