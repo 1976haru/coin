@@ -15,6 +15,14 @@ from .mock_simulation import (
     MockBroker, MockBrokerConfig,
     MockAccountState, MockPositionBook, MockMarket, MockExecutionEngine,
 )
+from .paper_market_broker import (
+    PaperMarketBroker, PaperMarketBrokerConfig, PaperMarketSource,
+    make_paper_universe,
+)
+from .paper_trader import (
+    PaperTrader, PaperTraderError, PaperStatus, PaperOrderLogEntry,
+    AVAILABLE_PAPER_SOURCES,
+)
 from .upbit_adapter import (
     UpbitAdapter,
     normalize_upbit_market, to_internal_symbol, is_krw_market,
@@ -92,6 +100,11 @@ __all__ = [
     # MockBroker simulation (#24)
     "MockBroker", "MockBrokerConfig",
     "MockAccountState", "MockPositionBook", "MockMarket", "MockExecutionEngine",
+    # PaperBroker / PaperTrader (#25)
+    "PaperMarketBroker", "PaperMarketBrokerConfig", "PaperMarketSource",
+    "make_paper_universe",
+    "PaperTrader", "PaperTraderError", "PaperStatus", "PaperOrderLogEntry",
+    "AVAILABLE_PAPER_SOURCES",
     "UpbitAdapter",
     # Upbit #21 보조 모듈
     "UpbitPublicClient", "UpbitPublicAPIError", "UpbitTransportResponse",

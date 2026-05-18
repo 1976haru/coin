@@ -310,10 +310,25 @@ r2 = b.place_order({
 assert b.get_position("BTC-USDT")["realized_pnl"] == 20.0
 ```
 
-## 11. 후속 단계와의 관계
+## 11. `MockBroker` vs `PaperMarketBroker` (#24 vs #25)
 
-- 25번 Paper Broker — 기존 `PaperBroker` (랜덤 slippage/fill_chance) 그대로 유지.
-  `MockBroker` 는 결정론 시뮬, `PaperBroker` 는 확률 시뮬 — 역할 분리.
+| | `MockBroker` (`mock_simulation.py`) | `PaperMarketBroker` (`paper_market_broker.py`) |
+|---|---|---|
+| 가격 source | 결정론 hash + `set_market_price` | read-only adapter `fetch_ticker(symbol)` |
+| Slippage | 결정론 (bp) | 결정론 (bp) |
+| universe / staleness | (없음) | universe whitelist + max_ticker_age_sec |
+| LIMIT book | open book + cancel | open book + cancel |
+| 외부 호출 | 없음 | 없음 (source 가 read-only) |
+| 용도 | CI 단위 테스트 (결정론) | 실시간 환경 검증 (paper mode) |
+
+`PaperTrader` (`paper_trader.py`) 는 `PaperMarketBroker` 의 상위 컨트롤러로,
+source 선택과 OrderGateway 경유 강제 정책을 제공한다. 자세한 내용은
+`docs/paper_broker.md`.
+
+## 12. 후속 단계와의 관계
+
+- 25번 Paper Broker — 별도 doc(`docs/paper_broker.md`). `MockBroker` 와는 가격
+  source 출처가 다르고 universe/staleness 가드를 추가.
 - 26번 Rate Limit Guard — Mock 브로커는 외부 호출이 없어 rate limit 미적용.
 - LIVE 주문 adapter — 본 작업 범위 밖. 별도 LIVE class + OrderGateway 끝단 호출
   + 별도 환경변수 + 별도 승인 절차 통과 후.

@@ -11,6 +11,8 @@ from app.core.config import get_settings
 from app.execution.approval_queue import ApprovalQueue
 from app.execution.order_gateway import OrderGateway
 from app.brokers.paper_broker import PaperBroker
+from app.brokers.paper_trader import PaperTrader
+from app.brokers.paper_market_broker import PaperMarketBrokerConfig
 from app.audit.audit_log import AuditLog
 from app.market.collector import MarketDataCollector, MockMarketDataSource
 from app.market.freshness import FreshnessTracker, policy_from_settings
@@ -69,6 +71,18 @@ theme_signal_collector = ThemeSignalCollector(
     providers={"mock": MockThemeProvider()},
 )
 
+# 체크리스트 #25: PaperTrader (read-only 시세 source 기반 paper-trading 컨트롤러).
+# 기본 source 는 mock. 운영자가 /api/paper/source 로 변경 가능.
+paper_trader = PaperTrader(
+    default_source_name="mock",
+    broker_config=PaperMarketBrokerConfig(
+        base_currency="USDT",
+        fee_bps=5.0,
+        slippage_bps=0.0,
+        initial_balances={"USDT": 10_000.0},
+    ),
+)
+
 
 def get_settings_dep():
     return settings
@@ -124,6 +138,10 @@ def get_news() -> NewsRegistry:
 
 def get_theme_signal_collector() -> ThemeSignalCollector:
     return theme_signal_collector
+
+
+def get_paper_trader() -> PaperTrader:
+    return paper_trader
 
 
 def verify_admin(x_admin_token: str = Header(default="")):

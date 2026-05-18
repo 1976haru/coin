@@ -3,7 +3,7 @@ from fastapi import APIRouter
 
 from . import (
     health, info, market, strategies, orders, approvals,
-    risk, logs, watchlist, notices, themes, config, metrics,
+    risk, logs, watchlist, notices, themes, config, metrics, paper,
 )
 
 api_router = APIRouter()
@@ -20,5 +20,6 @@ api_router.include_router(notices.router)
 api_router.include_router(themes.router)
 api_router.include_router(config.router)
 api_router.include_router(metrics.router)
+api_router.include_router(paper.router)
 
 __all__ = ["api_router"]
