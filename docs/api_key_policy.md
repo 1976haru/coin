@@ -9,6 +9,12 @@
 
 ---
 
+## 0.1 관련 문서
+
+- 환경 프로파일 + Startup Guard: [`docs/env_profiles.md`](env_profiles.md) (#28) —
+  PAPER/SHADOW/LIVE/TEST 프로파일 분리 + 부팅 시 키 정합성 검증.
+- Sandbox/Paper Keys 분리 정책: [`docs/sandbox_paper_keys.md`](sandbox_paper_keys.md) (#28 1차).
+
 ## 1. 권한 등급 (Permission Tier)
 
 거래소 API 키는 권한 조합으로 정의되지만, 본 시스템은 다음 **3단계 등급**으로

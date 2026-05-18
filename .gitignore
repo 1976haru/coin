@@ -1,4 +1,23 @@
 .env
+.env.local
+.env.*.local
+# Env profile files — #28 (실제 키 보관용 — 절대 commit 금지)
+.env.live
+.env.shadow
+.env.paper
+.env.paper.local
+.env.test.local
+backend/.env
+backend/.env.local
+backend/.env.live
+backend/.env.shadow
+backend/.env.paper
+backend/.env.paper.local
+backend/.env.test.local
+frontend/.env
+frontend/.env.local
+frontend/.env.live
+frontend/.env.shadow
 *.key
 secrets/
 __pycache__/

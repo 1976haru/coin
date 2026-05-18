@@ -241,13 +241,14 @@ def scan() -> list[Finding]:
                     snippet=m.group(0).strip(),
                 ))
 
-        # 6. dangerous flag true
-        for m in _DANGEROUS_TRUE_PAT.finditer(text):
-            findings.append(Finding(
-                file=rel, line=_line_no(text, m.start()),
-                rule="dangerous_flag_true",
-                snippet=m.group(0).strip(),
-            ))
+        # 6. dangerous flag true — docs / 테스트 파일은 부정-예시/설명 fixture 보유.
+        if not _in_tests_dir(path) and not rel.startswith("docs/"):
+            for m in _DANGEROUS_TRUE_PAT.finditer(text):
+                findings.append(Finding(
+                    file=rel, line=_line_no(text, m.start()),
+                    rule="dangerous_flag_true",
+                    snippet=m.group(0).strip(),
+                ))
 
     return findings
 

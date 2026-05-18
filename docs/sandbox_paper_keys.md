@@ -8,6 +8,10 @@
 > 한 줄 요약: **모드별로 다른 env 변수 이름을 쓴다. 같은 변수에 LIVE 와 sandbox
 > 를 번갈아 넣지 않는다. 코드는 mode 별 변수 이름을 보고 분기한다.**
 
+> **2026-05-18 보강**: 본 정책은 **`AppProfile` (PAPER/SHADOW/LIVE/TEST) + StartupGuard**
+> 로 코드 레벨에서 강제된다. 자세한 내용은 [`docs/env_profiles.md`](env_profiles.md)
+> (#28 2차 확장).
+
 ---
 
 ## 1. Adapter Mode → Key Tier 매핑

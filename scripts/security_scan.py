@@ -72,6 +72,8 @@ WHITELIST_VALUES = {
     "REDACTED",
     "***REDACTED***",
     "YOUR_TOKEN_HERE",
+    "__SET_IN_LOCAL_ENV_ONLY__",
+    "set_in_local_env_only",
 }
 
 

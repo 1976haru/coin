@@ -304,4 +304,11 @@ ENV_VARS_REFERENCED: tuple[str, ...] = (
     "ADMIN_TOKEN",
     "EXCHANGERATE_API_KEY",
     "USDT_KRW_FALLBACK",
+    # ── Env Profiles + Startup Guard (#28) — app.core.profile 가 참조 ──
+    "APP_PROFILE",
+    "KEY_PROFILE",
+    "LIVE_CONFIRMATION",
+    "REQUIRE_LOCAL_SECRETS",
+    "ALLOW_SANDBOX_KEYS_ONLY",
+    "STARTUP_GUARD_STRICT",
 )
