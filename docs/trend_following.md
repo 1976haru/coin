@@ -261,8 +261,9 @@ python -m pytest tests/test_trend_following.py -q     # 기존 1차 회귀
 
 ## 13. 후속 단계
 
-- 31번 Volatility Breakout / 32번 Pair Trading / 33번 Kimp Mean Reversion 도 동일
-  패턴(`*_contract.py` + ABC 구현)으로 추가 가능.
+- 31번 Volatility Breakout (✅ 2026-05-18 [`docs/volatility_breakout.md`](volatility_breakout.md))
+  / 32번 Pair Trading / 33번 Kimp Mean Reversion 도 동일 패턴(`*_contract.py` +
+  ABC 구현)으로 추가 가능.
 - `StrategySelectionAgent` 본격 구현 — LLM 또는 정교한 휴리스틱.
 - 전략 결과 → AgentOrchestrator → RiskManager → OrderGateway 통합은 별도 PR.
 

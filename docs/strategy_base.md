@@ -282,11 +282,15 @@ cd backend
 python -m pytest tests/test_strategy_contract.py tests/test_strategy_base.py -q
 ```
 
-## 8.1 구현 예시 (#30)
+## 8.1 구현 예시 (#30, #31)
 
 - [`docs/trend_following.md`](trend_following.md) — `TrendFollowingContractStrategy`
   가 본 ABC 의 첫 신규 구현체. EMA/SMA/Donchian/ADX + freshness/quality/notice/
   theme context 통합 안전 가드.
+- [`docs/volatility_breakout.md`](volatility_breakout.md) —
+  `VolatilityBreakoutContractStrategy`. ATR 변동성 확장 + 직전 N봉 high/low
+  돌파 + 거래량 확장 필터 + 초고변동 시 sizing 자동 축소. `preferred_regimes` =
+  RANGE / TREND_UP / TREND_DOWN.
 
 ## 9. 후속 단계
 
